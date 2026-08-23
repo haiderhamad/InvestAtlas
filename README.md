@@ -10,7 +10,7 @@ InvestAtlas helps Muslim investors understand what a transparent, implemented sc
 
 Around that trust-first core, the app combines portfolio tracking, sourced asset-class analytics, country-aware tax awareness, technical strategy tools, purification support, optional AI-assisted transaction import, and multilingual desktop/mobile experiences.
 
-Current public release: **v1.2.2 — Trust & Trilingual Baseline**
+Current public release: **v1.2.3 — Provider Usability Patch**
 
 ## 🧭 Product Priorities
 
@@ -45,14 +45,14 @@ InvestAtlas does not depend on a shared public AI key. A signed-in user can opti
 
 Possible providers:
 
-| Provider | v1.2.2 support |
+| Provider | v1.2.3 support |
 | --- | --- |
 | Gemini | Transaction-document import through fixed Google Gemini endpoints |
 | Groq | Transaction-document import through fixed Groq endpoints |
 | OpenRouter | Transaction-document import through fixed OpenRouter endpoints |
 | OpenAI | Transaction-document import through fixed OpenAI endpoints, with optional organization/project metadata |
 
-In v1.2.2, AI is limited to a user-initiated transaction-document import proposal. The document is sent only to the highest-priority enabled provider and is never automatically forwarded to a fallback provider. The user must review the extracted rows before applying them. Technical Analysis is deterministic and local; AI does not provide market prices, fundamentals, portfolio recommendations, or Savings-Plan allocations. Arbitrary custom AI URLs remain disabled; supported providers use fixed, server-controlled endpoints.
+In v1.2.3, AI remains limited to a user-initiated transaction-document import proposal. The document is sent only to the highest-priority enabled provider and is never automatically forwarded to a fallback provider. The user must review the extracted rows before applying them. Technical Analysis is deterministic and local; AI does not provide market prices, fundamentals, portfolio recommendations, or Savings-Plan allocations. Supported services accept their own custom model IDs through fixed, server-controlled endpoints. Arbitrary URLs, ports, WebSockets, and user-selected hosts remain disabled.
 
 ## 🚀 How To Start
 
@@ -68,7 +68,7 @@ The core Demo remains usable without an account, AI key, or financial-data key.
 
 v1.2 introduces a field-level trust model for availability, source, currency, freshness, observation date, and calculated values. Missing information remains unavailable instead of being replaced with a plausible estimate.
 
-The public hosted release intentionally activates only official European Central Bank reference FX. Shared stock and crypto quote/history providers remain disabled while display, proxy, permission, or redistribution rights are unresolved. A Tiingo BYOK adapter exists for local engineering, but hosted connection and market-data display remain disabled pending written rights clarification. The signed-out Demo Snapshot stays useful through clearly labelled, dated synthetic examples that are isolated from personal data.
+The public hosted release intentionally activates only official European Central Bank reference FX. Shared stock and crypto quote/history providers remain disabled while display, proxy, permission, or redistribution rights are unresolved. A Tiingo BYOK adapter exists for local engineering, but hosted connection and market-data display remain disabled pending written rights clarification. The signed-out Demo Snapshot stays useful through clearly labelled, dated synthetic examples that are isolated from personal data. v1.2.3 also gives signed-in users a deliberate, failure-aware way to leave Cloud Workspace and explore that separate read-only snapshot without migrating, deleting, or blending personal records.
 
 ## 🧪 Strategy And Manual Savings-Plan Tools
 
@@ -77,6 +77,8 @@ The Strategy Lab includes SMA and Dual-SMA concepts. A Golden Cross style signal
 The Crypto Plan / savings-plan area keeps allocation decisions manual. It can show source availability and planning context, but it does not generate or apply AI portfolio allocations.
 
 ## 🖼️ Screenshots
+
+v1.2.3 is a focused provider-usability patch, so it retains the reviewed v1.2.2 visual baseline instead of replacing professional poster assets with materially identical captures. Future visual refreshes continue to use this curated poster style and dimensional iPhone presentation.
 
 ### v1.2.2 Product-Truth Overview
 
@@ -107,6 +109,15 @@ The screening interface exposes unavailable evidence and the implemented methodo
 The poster set uses the current v1.2.2 Production UI, read-only Demo Snapshot, and real hosted-provider policy. All holdings and charts shown are synthetic and dated. English/LTR, German/LTR, and Arabic/RTL are shown directly across the reviewed set.
 
 ## 🧾 Release History
+
+### v1.2.3 — Provider Usability Patch
+
+- Fixed a repeated Financial Provider status request loop that could surface `429 Too Many Requests`.
+- Made provider-status loading abort-safe, explicitly retryable, and stable across rerenders and language changes.
+- Added a safe, failure-aware route from Cloud Workspace to the isolated read-only Demo Snapshot without migrating or blending data.
+- Clarified custom model-ID support through fixed OpenAI, Gemini, Groq, and OpenRouter services while arbitrary endpoints remain blocked.
+- Completed affected English, German, and Arabic/RTL states and validated the public mobile interface without horizontal overflow.
+- Kept hosted financial BYOK fail-closed pending written permission; unavailable market data is still never guessed or replaced with synthetic values inside personal workspaces.
 
 ### v1.2.2 — Trust & Trilingual Baseline
 
