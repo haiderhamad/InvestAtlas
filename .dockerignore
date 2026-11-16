@@ -1,0 +1,33 @@
+# Allowlist the build context. No env, Git/developer metadata, data or outputs.
+**
+!package.json
+!package-lock.json
+!LICENSE
+!LICENSING.md
+!THIRD_PARTY_NOTICES.md
+!next.config.ts
+!tsconfig.json
+!tsconfig.local.json
+!postcss.config.mjs
+!src/
+!src/**
+!public/
+!public/**
+!scripts/
+!scripts/export-messages.js
+!scripts/check-i18n-coverage.js
+!scripts/local.mjs
+!scripts/local-runtime.mjs
+!scripts/local-container.mjs
+
+# Never re-include nested credentials/developer state through source wildcards.
+**/.env
+**/.env.*
+**/*.pem
+**/*.key
+**/.git
+**/.git/**
+**/.codex
+**/.codex/**
+**/.agents
+**/.agents/**

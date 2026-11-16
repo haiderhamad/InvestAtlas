@@ -1,0 +1,348 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsUserId() {
+      return signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    function writesOwnUserId() {
+      return signedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    function ownsPath(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function accountDeletionNotStarted() {
+      return signedIn()
+        && !exists(
+          /databases/$(database)/documents/users/$(request.auth.uid)/accountDeletion/state
+        );
+    }
+
+    function validRequiredString(value, maxLength) {
+      return value is string
+        && value.size() > 0
+        && value.size() <= maxLength;
+    }
+
+    function validNumber(value, minimum, maximum) {
+      return value is number
+        && value >= minimum
+        && value <= maximum;
+    }
+
+    function validTransactionTaxType(type, taxType, assetClass) {
+      return (type == 'buy' && taxType == 'acquisition')
+        || (type == 'sell' && taxType == 'disposal')
+        || (type == 'deposit'
+          && ((assetClass == 'cash' && taxType == 'cash_in')
+            || (assetClass != 'cash' && taxType == 'transfer_in')))
+        || (type == 'withdrawal'
+          && ((assetClass == 'cash' && taxType == 'cash_out')
+            || (assetClass != 'cash' && taxType == 'transfer_out')))
+        || (type == 'dividend' && taxType == 'dividend_income')
+        || (type == 'transfer'
+          && (taxType == 'transfer_in' || taxType == 'transfer_out'))
+        || (type == 'fee' && taxType == 'fee_expense')
+        || (type == 'adjustment' && taxType == 'adjustment');
+    }
+
+    function validTransaction(data) {
+      return data.keys().hasAll([
+          'userId',
+          'id',
+          'date',
+          'venue',
+          'type',
+          'asset',
+          'assetClass',
+          'quote',
+          'amount',
+          'price',
+          'total',
+          'fee',
+          'taxType',
+          'source'
+        ])
+        && data.keys().hasOnly([
+          'userId',
+          'id',
+          'date',
+          'venue',
+          'settlementVenue',
+          'type',
+          'asset',
+          'assetName',
+          'assetClass',
+          'quote',
+          'amount',
+          'price',
+          'total',
+          'fee',
+          'taxAmount',
+          'taxType',
+          'source',
+          'notes',
+          'updatedAt',
+          'feeMode',
+          'transferGroupId',
+          'transferredCostBasisEur',
+          'transferredCostBasisStatus',
+          'metalFineness',
+          'fxRateToEur',
+          'fxRateSource',
+          'fxRateDate'
+        ])
+        && validRequiredString(data.userId, 128)
+        && validRequiredString(data.id, 512)
+        && validRequiredString(data.date, 64)
+        && validRequiredString(data.venue, 160)
+        && (!data.keys().hasAny(['settlementVenue'])
+          || validRequiredString(data.settlementVenue, 160))
+        && data.type in [
+          'buy',
+          'sell',
+          'deposit',
+          'withdrawal',
+          'dividend',
+          'transfer',
+          'fee',
+          'adjustment'
+        ]
+        && validRequiredString(data.asset, 64)
+        && data.asset.matches('^[A-Z0-9][A-Z0-9._-]{0,63}$')
+        && (!data.keys().hasAny(['assetName'])
+          || (data.assetName is string && data.assetName.size() <= 256))
+        && data.assetClass in ['crypto', 'stock', 'etf', 'metal', 'cash']
+        && ((data.assetClass == 'metal'
+            && data.keys().hasAll(['metalFineness'])
+            && validNumber(data.metalFineness, 1, 1000))
+          || (data.assetClass != 'metal'
+            && !data.keys().hasAny(['metalFineness'])))
+        && validRequiredString(data.quote, 16)
+        && data.quote.matches('^[A-Z0-9][A-Z0-9._-]{0,15}$')
+        && (
+          (data.quote == 'EUR'
+            && !data.keys().hasAny([
+              'fxRateToEur',
+              'fxRateSource',
+              'fxRateDate'
+            ]))
+          || (data.quote != 'EUR'
+            && (
+              !data.keys().hasAny([
+                'fxRateToEur',
+                'fxRateSource',
+                'fxRateDate'
+              ])
+              || (
+                data.keys().hasAll([
+                  'fxRateToEur',
+                  'fxRateSource',
+                  'fxRateDate'
+                ])
+                && validNumber(data.fxRateToEur, 0.000000000001, 1000000)
+                && data.fxRateSource in [
+                  'broker_statement',
+                  'market_provider',
+                  'user_entered'
+                ]
+                && data.fxRateDate is string
+                && data.fxRateDate.matches(
+                  '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+                )
+              )
+            ))
+        )
+        && validNumber(data.amount, 0.000000000001, 1000000000000000)
+        && validNumber(data.price, 0, 1000000000000000)
+        && validNumber(data.total, 0, 1000000000000000000)
+        && validNumber(data.fee, 0, 1000000000000000)
+        && (!data.keys().hasAny(['taxAmount'])
+          || validNumber(data.taxAmount, 0, 1000000000000000))
+        && validTransactionTaxType(
+          data.type,
+          data.taxType,
+          data.assetClass
+        )
+        && data.source in ['manual', 'broker']
+        && (!data.keys().hasAny(['notes'])
+          || (data.notes is string && data.notes.size() <= 4000))
+        && (!data.keys().hasAny(['updatedAt'])
+          || validRequiredString(data.updatedAt, 64))
+        && (!data.keys().hasAny(['feeMode'])
+          || data.feeMode in ['none', 'percent', 'flat'])
+        && (!data.keys().hasAny(['transferGroupId'])
+          || validRequiredString(data.transferGroupId, 160))
+        && (!data.keys().hasAny(['transferredCostBasisEur'])
+          || validNumber(
+            data.transferredCostBasisEur,
+            0,
+            1000000000000000000
+          ))
+        && (!data.keys().hasAny(['transferredCostBasisStatus'])
+          || data.transferredCostBasisStatus in ['known', 'unknown'])
+        && (!data.keys().hasAny(['transferredCostBasisEur'])
+          || data.transferredCostBasisStatus == 'known')
+        && (!data.keys().hasAny(['transferredCostBasisStatus'])
+          || data.transferredCostBasisStatus == 'unknown'
+          || data.keys().hasAny(['transferredCostBasisEur']));
+    }
+
+    function validCashRoutes(routes) {
+      return routes is list
+        && routes.size() <= 4
+        && routes.hasOnly(['stock', 'etf', 'crypto', 'metal'])
+        && routes.size() == routes.toSet().size();
+    }
+
+    function validManualAccount(data) {
+      return data.keys().hasAll([
+          'userId',
+          'id',
+          'venue',
+          'label',
+          'kind',
+          'portfolioScope',
+          'cashCategory',
+          'cashRoutes',
+          'needsPortfolioScopeReview',
+          'notes',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'userId',
+          'id',
+          'venue',
+          'label',
+          'kind',
+          'portfolioScope',
+          'cashCategory',
+          'cashRoutes',
+          'archivedAt',
+          'needsPortfolioScopeReview',
+          'notes',
+          'createdAt'
+        ])
+        && validRequiredString(data.userId, 128)
+        && validRequiredString(data.id, 512)
+        && validRequiredString(data.venue, 160)
+        && validRequiredString(data.label, 160)
+        && data.kind in [
+          'Brokerage',
+          'Bank Account',
+          'Savings Account',
+          'Exchange',
+          'Vault',
+          'Other'
+        ]
+        && data.portfolioScope in ['portfolio', 'private']
+        && data.cashCategory in ['investment_cash', 'savings_cash']
+        && validCashRoutes(data.cashRoutes)
+        && (!data.keys().hasAny(['archivedAt'])
+          || validRequiredString(data.archivedAt, 64))
+        && data.needsPortfolioScopeReview is bool
+        && data.notes is string
+        && data.notes.size() <= 4000
+        && validRequiredString(data.createdAt, 64);
+    }
+
+    function validAssetRisk(data) {
+      return data.keys().hasAll(['userId', 'symbol', 'risk'])
+        && data.keys().hasOnly(['userId', 'symbol', 'risk'])
+        && validRequiredString(data.userId, 128)
+        && validRequiredString(data.symbol, 32)
+        && data.symbol.matches('^[A-Z0-9][A-Z0-9._-]{0,31}$')
+        && data.risk in ['High', 'Medium', 'Low'];
+    }
+
+    function validHiddenAssets(data) {
+      return data.keys().hasAll(['symbols'])
+        && data.keys().hasOnly(['symbols'])
+        && data.symbols is list
+        && data.symbols.size() <= 256
+        && data.symbols.size() == data.symbols.toSet().size()
+        && (
+          data.symbols.size() == 0
+          || data.symbols.join(',').matches(
+            '^([A-Z][A-Z0-9._-]{0,31}|[0-9][A-Z0-9._-]{0,14}[A-Z][A-Z0-9._-]{0,15})(,([A-Z][A-Z0-9._-]{0,31}|[0-9][A-Z0-9._-]{0,14}[A-Z][A-Z0-9._-]{0,15}))*$'
+          )
+        );
+    }
+
+    // Legacy provider documents contain plaintext API keys. Keep them
+    // inaccessible while v1.1 moves secrets to a server-only store.
+    match /users/{userId}/aiProviders/{providerId} {
+      allow read, write: if false;
+    }
+
+    // The encrypted vault is server-owned in v1.1. Browser SDK access is
+    // denied even to the owner; authenticated server routes authorize by UID.
+    match /users/{userId}/aiProviderVault/{vaultId} {
+      allow read, write: if false;
+    }
+
+    // Financial BYOK credentials use a separate encrypted, server-owned vault.
+    // Full keys and encrypted payloads are never readable through the browser SDK.
+    match /users/{userId}/financialProviderVault/{vaultId} {
+      allow read, write: if false;
+    }
+
+    // Server-owned coordination marker. Browser access is denied, and its
+    // existence freezes new user writes until a retry completes deletion.
+    match /users/{userId}/accountDeletion/{markerId} {
+      allow read, write: if false;
+    }
+
+    match /transactions/{transactionId} {
+      allow read, delete: if ownsUserId();
+      allow create: if writesOwnUserId()
+        && accountDeletionNotStarted()
+        && validTransaction(request.resource.data);
+      allow update: if ownsUserId()
+        && writesOwnUserId()
+        && accountDeletionNotStarted()
+        && resource.data.userId == request.resource.data.userId
+        && validTransaction(request.resource.data);
+    }
+
+    match /manual-accounts/{accountId} {
+      allow read, delete: if ownsUserId();
+      allow create: if writesOwnUserId()
+        && accountDeletionNotStarted()
+        && validManualAccount(request.resource.data);
+      allow update: if ownsUserId()
+        && writesOwnUserId()
+        && accountDeletionNotStarted()
+        && resource.data.userId == request.resource.data.userId
+        && validManualAccount(request.resource.data);
+    }
+
+    match /asset-risks/{riskId} {
+      allow read, delete: if ownsUserId();
+      allow create: if writesOwnUserId()
+        && accountDeletionNotStarted()
+        && riskId == request.auth.uid + '_' + request.resource.data.symbol
+        && validAssetRisk(request.resource.data);
+      allow update: if ownsUserId()
+        && writesOwnUserId()
+        && accountDeletionNotStarted()
+        && resource.data.userId == request.resource.data.userId
+        && riskId == request.auth.uid + '_' + request.resource.data.symbol
+        && validAssetRisk(request.resource.data);
+    }
+
+    match /user_hidden_assets/{userId} {
+      allow read, delete: if ownsPath(userId);
+      allow create, update: if ownsPath(userId)
+        && accountDeletionNotStarted()
+        && validHiddenAssets(request.resource.data);
+    }
+  }
+}

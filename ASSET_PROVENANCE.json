@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "source": "public/app-icon.svg",
+  "license": "Apache-2.0",
+  "preparedOn": "2026-11-14",
+  "authorship": "Original geometric SVG source created during owner-authorized InvestAtlas release preparation; no third-party artwork or font input.",
+  "authorization": "Owner approved new reproducible SVG icons and Apache-2.0 source/derivative licensing on 2026-11-14.",
+  "priorArtwork": "Replaced artwork remains unverified, is preserved privately, and is excluded from this source candidate.",
+  "generator": "scripts/generate-app-icons.mjs",
+  "renderer": {
+    "package": "sharp",
+    "version": "0.35.5",
+    "libvips": "8.18.7"
+  },
+  "assets": [
+    {
+      "path": "public/app-icon.svg",
+      "sha256": "2166d40e719fa601e478372239b36e002f50c0f7dd63adca7582923f3b0bdcdf",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "public/app-icon-192.png",
+      "sha256": "d6203f4420bcc0e40f7b55a5c09f9bb08b5f1162ea4bea2f23d40218e19e3d12",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "public/app-icon-512.png",
+      "sha256": "c9359b025b87869b47bd3f1717b553aed6a8be1f3b6177715448a66439d49751",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "public/apple-touch-icon.png",
+      "sha256": "9d983283926793c7229d6e1218f7e3894ac094306971c82c08946883395c90ee",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "src/app/favicon.ico",
+      "sha256": "4d1e711894431950f06140fce1b7c29e7c9e763b95c9d503b7ce731d707df1c6",
+      "license": "Apache-2.0"
+    }
+  ]
+}

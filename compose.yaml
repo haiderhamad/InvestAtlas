@@ -1,0 +1,16 @@
+# Local Personal only. Host publication remains loopback-only.
+services:
+  investatlas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+    environment:
+      PORT: "${INVESTATLAS_PORT:-3000}"
+    ports:
+      - "127.0.0.1:${INVESTATLAS_PORT:-3000}:${INVESTATLAS_PORT:-3000}"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 15s
