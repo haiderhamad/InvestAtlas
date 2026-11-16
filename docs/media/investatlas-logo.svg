@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="104" viewBox="0 0 420 104" role="img" aria-labelledby="title description">
+  <title id="title">InvestAtlas</title>
+  <desc id="description">The app's blue Gem symbol and InvestAtlas wordmark, with the subtitle Shariah-aware.</desc>
+  <!--
+    Wordmark/layout: InvestAtlas, Apache-2.0. Reproduces the existing app identity.
+    Gem paths: lucide-react 0.577.0, ISC; see THIRD_PARTY_NOTICES.md.
+
+    ISC License
+    Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2026 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2026.
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted, provided that the above
+    copyright notice and this permission notice appear in all copies.
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  -->
+  <rect width="420" height="104" rx="18" fill="#0f1a29"/>
+  <g transform="translate(28 28) scale(2)" fill="none" stroke="#9dc6ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10.5 3 8 9l4 13 4-13-2.5-6"/>
+    <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z"/>
+    <path d="M2 9h20"/>
+  </g>
+  <text x="100" y="53" fill="#4f8cff" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="800" letter-spacing="-1">InvestAtlas</text>
+  <text x="102" y="76" fill="#9dc6ff" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="1.6">SHARIAH-AWARE</text>
+</svg>

@@ -3,10 +3,10 @@
   "preparedOn": "2026-11-16",
   "product": "InvestAtlas",
   "version": "1.2.4",
-  "status": "UNPUBLISHED_REVIEW_CANDIDATE",
-  "publicationDecision": "SEPARATE_OWNER_AUTHORIZATION_REQUIRED",
+  "status": "PUBLISHED_SOURCE",
+  "publicationDecision": "OWNER_AUTHORIZED_PUBLIC_COMMIT_AND_PUSH",
   "publicRepository": "https://github.com/haiderhamad/InvestAtlas",
-  "sourceUploaded": false,
+  "sourceUploaded": true,
   "modes": [
     "local_personal",
     "private_cloud",
@@ -89,21 +89,21 @@
     },
     {
       "path": "LICENSING.md",
-      "sha256": "3e2f7f5d72d257535d4373665fcb25b8061def69f59a39a26907713a8d11619c",
-      "sourceSha256": "3e2f7f5d72d257535d4373665fcb25b8061def69f59a39a26907713a8d11619c",
-      "operation": "copy"
+      "sha256": "bad621d20c7d4a63b74eed510f524c0dac081210161826aaca8ef6a89721b79b",
+      "sourceSha256": "bad621d20c7d4a63b74eed510f524c0dac081210161826aaca8ef6a89721b79b",
+      "operation": "documentation"
     },
     {
       "path": "README.md",
-      "sha256": "e12b280f3b49e3f7e9269ee940b1ebc6e96aa768ff56ef3832f28c011edf2aef",
-      "sourceSha256": "e12b280f3b49e3f7e9269ee940b1ebc6e96aa768ff56ef3832f28c011edf2aef",
-      "operation": "copy"
+      "sha256": "6113aae705554eb05c387c4e4255c9dbac0bb75d06d42607df9a769b5351953c",
+      "sourceSha256": "6113aae705554eb05c387c4e4255c9dbac0bb75d06d42607df9a769b5351953c",
+      "operation": "documentation"
     },
     {
       "path": "RELEASE_STATUS.md",
-      "sha256": "f3ecbeaa5161f8b83797afa31365d85f9fd5ae38396a584cdfebfbdef0882db6",
-      "sourceSha256": null,
-      "operation": "distribution metadata"
+      "sha256": "ab61dd9505d7a8b58ecbcd2053e1bb06e70f0643385f9e62e64f5657d068d7c9",
+      "sourceSha256": "ab61dd9505d7a8b58ecbcd2053e1bb06e70f0643385f9e62e64f5657d068d7c9",
+      "operation": "documentation"
     },
     {
       "path": "SECURITY.md",
@@ -1430,6 +1430,42 @@
       "sha256": "0bb64e57a5a1e17fcd23e50ce98388b8bc69ffa39cb15d841663da3d1176ebaf",
       "sourceSha256": "0bb64e57a5a1e17fcd23e50ce98388b8bc69ffa39cb15d841663da3d1176ebaf",
       "operation": "copy"
+    },
+    {
+      "path": "docs/media/README.md",
+      "sha256": "d31deb6c3b225749b3a6f9682ef1f3a32f05da026bcaf7eb4c30d42a90aee863",
+      "sourceSha256": "d31deb6c3b225749b3a6f9682ef1f3a32f05da026bcaf7eb4c30d42a90aee863",
+      "operation": "documentation"
+    },
+    {
+      "path": "docs/media/bitcoin-desktop.png",
+      "sha256": "5629841ad5085bb7dfc1a63b993e405b7b58418e6d346bfb23d9ef872c88bfdb",
+      "sourceSha256": "5629841ad5085bb7dfc1a63b993e405b7b58418e6d346bfb23d9ef872c88bfdb",
+      "operation": "documentation"
+    },
+    {
+      "path": "docs/media/etf-desktop.png",
+      "sha256": "55bbbc08c2fc2406eed050fdb8a40b030cb62ce3e010164e64f460505f240666",
+      "sourceSha256": "55bbbc08c2fc2406eed050fdb8a40b030cb62ce3e010164e64f460505f240666",
+      "operation": "documentation"
+    },
+    {
+      "path": "docs/media/gold-mobile-de.png",
+      "sha256": "7f0b9b9cb74e199fb67ac491500aa3ee4ab7a198ad39bdc9951fceb384f44079",
+      "sourceSha256": "7f0b9b9cb74e199fb67ac491500aa3ee4ab7a198ad39bdc9951fceb384f44079",
+      "operation": "documentation"
+    },
+    {
+      "path": "docs/media/investatlas-logo.svg",
+      "sha256": "5afd6a2432f09e704a243239e09b1d15c6cc9cd33b4d0eec514abe02bef340bd",
+      "sourceSha256": "5afd6a2432f09e704a243239e09b1d15c6cc9cd33b4d0eec514abe02bef340bd",
+      "operation": "documentation"
+    },
+    {
+      "path": "docs/media/silver-mobile-ar.png",
+      "sha256": "aa5dabe1045b84ecfc3c7c9c3071c5406de66480d5a6e826f12c1a594a51a80c",
+      "sourceSha256": "aa5dabe1045b84ecfc3c7c9c3071c5406de66480d5a6e826f12c1a594a51a80c",
+      "operation": "documentation"
     },
     {
       "path": "eslint.config.js",
@@ -2872,18 +2908,6 @@
       "operation": "copy"
     },
     {
-      "path": "src/lib/firebase/account-deletion.ts",
-      "sha256": "4b316d98b808c4588274812169a8ce48e3e4b89580cc2bfc33e4d5e7d76ae123",
-      "sourceSha256": "4b316d98b808c4588274812169a8ce48e3e4b89580cc2bfc33e4d5e7d76ae123",
-      "operation": "copy"
-    },
-    {
-      "path": "src/lib/firebase/admin-rest.ts",
-      "sha256": "20e5e8d8c098615f6f4fc0732bd4e5d2a6072de4b5ee9b0b9cf709cfe5110955",
-      "sourceSha256": "20e5e8d8c098615f6f4fc0732bd4e5d2a6072de4b5ee9b0b9cf709cfe5110955",
-      "operation": "copy"
-    },
-    {
       "path": "src/lib/firebase-config.ts",
       "sha256": "bb24a4b8b458bd4586f6827790d0520b5f6b0a93279bb47776b4348aee6c5964",
       "sourceSha256": "bb24a4b8b458bd4586f6827790d0520b5f6b0a93279bb47776b4348aee6c5964",
@@ -2899,6 +2923,18 @@
       "path": "src/lib/firebase.ts",
       "sha256": "3e8b1cebc6d1f25b18145eb38bb52663ef1e00a21137b7d9bdccb02b07988fbe",
       "sourceSha256": "3e8b1cebc6d1f25b18145eb38bb52663ef1e00a21137b7d9bdccb02b07988fbe",
+      "operation": "copy"
+    },
+    {
+      "path": "src/lib/firebase/account-deletion.ts",
+      "sha256": "4b316d98b808c4588274812169a8ce48e3e4b89580cc2bfc33e4d5e7d76ae123",
+      "sourceSha256": "4b316d98b808c4588274812169a8ce48e3e4b89580cc2bfc33e4d5e7d76ae123",
+      "operation": "copy"
+    },
+    {
+      "path": "src/lib/firebase/admin-rest.ts",
+      "sha256": "20e5e8d8c098615f6f4fc0732bd4e5d2a6072de4b5ee9b0b9cf709cfe5110955",
+      "sourceSha256": "20e5e8d8c098615f6f4fc0732bd4e5d2a6072de4b5ee9b0b9cf709cfe5110955",
       "operation": "copy"
     },
     {
@@ -3317,9 +3353,11 @@
     "nodePlatform": "macOS ARM64",
     "dockerPlatform": "Linux ARM64",
     "metadataOnlyRefresh": false,
-    "sourcePushPerformed": false,
+    "sourcePushPerformed": true,
     "documentationOnlyRefresh": true,
-    "remoteFullSourceCloneVerified": false
+    "remoteFullSourceCloneVerified": true,
+    "verifiedGitCommit": "078c838142f60abc3ea59646558a22597e257031",
+    "checkedOn": "2026-11-16"
   },
   "documentationChangesFromR4": [
     "LICENSING.md",
@@ -3331,9 +3369,9 @@
   ],
   "maintainerDecisions": {
     "decidedOn": "2026-11-14",
-    "legacyPublicPosters": "Four exact posters removed from prepared local public working copy after explicit approval; originals remain in unchanged history; no commit or push",
+    "legacyPublicPosters": "Four exact posters removed from published main with owner approval; original public history unchanged; historical rights not cleared by tip removal",
     "developmentAdvisory": "Retain documented Low deepmerge/Jest finding for now; no dependency change or suppression",
-    "publicationAuthorized": false
+    "publicationAuthorized": true
   },
   "documentationChangesFromR6": [
     "README.md",
@@ -3352,9 +3390,16 @@
   },
   "publicationPreparation": {
     "readmePreparedForSourceConsumers": true,
-    "sourceUploaded": false,
-    "commitCreated": false,
+    "sourceUploaded": true,
+    "commitCreated": true,
     "hostingBindingsInspectedReadOnly": true,
     "operatorSpecificConnectionEvidenceExcluded": true
+  },
+  "applicationPublicationCommit": "078c838142f60abc3ea59646558a22597e257031",
+  "readmeRefresh": {
+    "checkedOn": "2026-11-16",
+    "applicationUnchanged": true,
+    "images": "Real sourced ETF, Bitcoin, gold and silver observations in empty Local Personal workspace; see docs/media/README.md",
+    "syntheticScreenshotData": false
   }
 }

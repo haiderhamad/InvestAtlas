@@ -1,65 +1,120 @@
-# InvestAtlas
+<p align="center">
+  <img src="docs/media/investatlas-logo.svg" width="340" height="84" alt="InvestAtlas — Shariah-aware">
+</p>
 
-<img src="public/app-icon.svg" alt="InvestAtlas app icon" width="72" height="72">
+<h1 align="center">InvestAtlas</h1>
+<p align="center"><strong>Your portfolio. Your data. Your own instance.</strong></p>
+<p align="center">A Shariah-aware investment workspace for stocks, ETFs, crypto, gold, silver and cash.<br>Run it locally with Node.js or Docker, or host your own private cloud.</p>
 
-The complete Shariah-aware personal investment app: run it locally or host your
-own private instance. English, German and Arabic/RTL are supported.
+<p align="center">
+  <a href="package.json"><img src="https://img.shields.io/badge/Version-1.2.4-4f8cff" alt="Source version 1.2.4"></a>
+  <a href="#quick-start"><img src="https://img.shields.io/badge/Node.js-24%20%2F%2026-339933?logo=nodedotjs&amp;logoColor=white" alt="Supported patched Node.js 24 or 26"></a>
+  <a href="#docker"><img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&amp;logoColor=white" alt="Docker Compose installation"></a>
+  <a href="#features"><img src="https://img.shields.io/badge/Languages-EN%20%C2%B7%20DE%20%C2%B7%20AR-267C91" alt="English, German and Arabic with right-to-left layout"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-546A7B" alt="Apache License 2.0"></a>
+</p>
 
-**v1.2.4.** This source distribution includes the complete application, functional
-tests, Node.js launcher, Docker packaging and self-hosting instructions.
-Project repository: [haiderhamad/InvestAtlas](https://github.com/haiderhamad/InvestAtlas).
-Current icons have documented original source and reproducible derivatives;
-see [LICENSING](LICENSING.md). Dependency audit status and reporting guidance
-are in [SECURITY](SECURITY.md).
+<p align="center">
+  <a href="#features">Features</a> · <a href="#screenshots">Screenshots</a> · <a href="#quick-start">Quick start</a> · <a href="#market-data-and-personal-api-keys">Market data &amp; API keys</a> · <a href="docs/SELF_HOSTING.md">Self-hosting guide</a> · <a href="SECURITY.md">Security</a>
+</p>
 
-## What it does
+<p align="center">
+  <img src="docs/media/etf-desktop.png" width="1040" alt="InvestAtlas v1.2.4 desktop ETF chart in dark mode, displaying a real sourced quote, observation time and available historical prices">
+</p>
+<p align="center"><em>Actual v1.2.4 interface with real provider prices captured on November 16, 2026. Screenshots are dated observations, not a live feed.</em></p>
 
-- Track accounts, transactions, holdings, allocation and portfolio development.
-- Look up supported stocks, ETFs, crypto, gold and silver with source/time and
-  honest unavailable/partial-data states; chart the history each source provides.
-- Add individually resolved stocks/ETFs and review their Shariah evidence.
-  A price or ticker match is not proof of compliance; missing evidence remains
-  insufficient data.
-- Use deterministic screening, purification estimates, tax profiles, technical
-  indicators and planning tools where their required inputs are available.
-- Export/import bounded CSV backups with conflict review.
-- Connect your own supported market-data or AI keys. AI currently assists
-  document/transaction extraction; a generative portfolio adviser is not included.
+InvestAtlas brings portfolio tracking, market research and transparent Shariah
+screening into one personal workspace. It is built for investors who want to
+understand both their holdings and the evidence behind a result. Missing prices,
+incomplete history and insufficient screening evidence remain visible.
 
-## Choose how to run it
+This repository contains the **complete application source**, functional tests,
+local launcher, Docker packaging and cloud setup instructions. No account or
+API key is required to start a local workspace or explore its separate demo.
 
-| Mode | Use | Data and authentication |
-|---|---|---|
-| `local_personal` | Node.js or Docker on your computer | Browser-local data; no Firebase account required |
-| `private_cloud` | Your own protected cloud deployment | Your Firebase project, exact owner UID and restrictive rules |
-| `public_demo` | Optional illustrative website | Synthetic read-only data; no personal accounts or market APIs |
+## Features
 
-The public source repository supplies the complete app. The optional Demo mode
-is one deployment choice. Each installation controls its own data and providers.
+### 💼 Portfolio and everyday finances
 
-## Get the source
+| Feature | What you can do |
+| --- | --- |
+| 📊 **Dashboard** | See current wealth, portfolio development, asset-class allocation and top holdings at a glance. |
+| 🗂️ **Multi-asset portfolio** | Track stocks, ETFs, cryptocurrencies, physical gold/silver and cash across your financial accounts. |
+| 🧾 **Accounts & ledger** | Record financial accounts and transactions, and derive holdings from the transaction ledger. |
+| 💸 **Dividends & watchlists** | Review recorded dividend activity and keep personal lists of instruments to follow. |
+| 🗓️ **Budget** | Organize income, expenses, categories and recurring entries across monthly, quarterly or annual views. |
+| 📈 **Analytics** | Inspect sourced asset-class allocation, and compare returns with supported benchmarks when compatible history is available. |
+
+### 🕌 Screening, research and planning
+
+| Feature | What you can do |
+| --- | --- |
+| 🛡️ **Shariah audit** | Review the implemented screening methodology and its evidence states: compliant, non-compliant, review required or insufficient data. |
+| 🔎 **Your own stocks & ETFs** | Search and resolve additional supported listings, use their available prices/history and inspect screening evidence. Finding a ticker or price does not establish Shariah compliance. |
+| 🕯️ **Prices & charts** | Explore supported stock/ETF, crypto and metal data with currency, provider, observation time, selectable history ranges and clear coverage limits. |
+| 🧼 **Tax & purification** | Work with tax-profile assumptions and purification estimates when the required inputs are known; missing data is kept distinct from a known zero. |
+| 🧪 **Strategy Lab** | Explore deterministic single- and dual-moving-average strategies and crossover tools, with backtesting where suitable historical data is available. |
+| 🎯 **Savings-plan tools** | Plan recurring contributions with your own budget and target percentages. Allocation decisions remain yours. |
+| 🤖 **Optional AI import** | Connect your own supported AI provider to extract proposed transaction rows from a document, then review them before applying. |
+
+### 🔐 A workspace you control
+
+- **Local or private cloud:** use browser-local records without signing in, or
+  configure a protected owner instance with your own Firebase project.
+- **English, German and Arabic/RTL:** choose your language, light/dark theme and
+  responsive desktop or mobile layout.
+- **Portable CSV:** export and restore supported workspace records with duplicate
+  and conflict review. Verify the documented size limits before relying on a backup.
+- **Separate demo:** explore a dated, read-only synthetic portfolio without mixing
+  it into your personal accounts or calculations.
+
+Screening results describe the implemented methodology and available evidence;
+they are not a religious ruling. See the
+[Shariah screening protocol](docs/SHARIAH_SCREENING_PROTOCOL.md).
+
+## Screenshots
+
+### ☀️ Desktop · Bitcoin in light theme
+
+<p align="center">
+  <img src="docs/media/bitcoin-desktop.png" width="1040" alt="InvestAtlas Bitcoin chart in light mode with a real sourced price, historical coverage and provider attribution">
+</p>
+
+### 📱 Mobile · German and Arabic/RTL
+
+<p align="center">
+  <img src="docs/media/gold-mobile-de.png" width="300" alt="German mobile Gold view with a real indicative spot price per fine gram, source and observation time">
+  &nbsp;&nbsp;
+  <img src="docs/media/silver-mobile-ar.png" width="300" alt="Arabic mobile Silver view with a real indicative spot price per fine gram, source and observation time in right-to-left layout">
+</p>
+
+These browser captures use real market-provider responses in an empty Local
+Workspace. They show the price, source, currency/unit and observation time the app
+reported at capture. They contain no personal holdings or API keys. Metal spot and
+historical coverage are distinct; unavailable history stays labelled.
+[Image sources and capture details](docs/media/README.md).
+
+## Quick start
+
+Choose **Node.js** or **Docker** for local use. Both run the same application and
+store your portfolio in the browser; Docker does not add server-side portfolio
+storage. Cloud hosting is a separate option below.
+
+### Node.js
+
+Install Git, npm and patched **Node.js 24.22.3+ within Node 24** (the `.nvmrc`
+preference), or **26.13.1+ within Node 26**.
 
 ```sh
 git clone https://github.com/haiderhamad/InvestAtlas.git
 cd InvestAtlas
-```
-
-Alternatively, extract a source archive and open its project directory. Both
-installation paths below start from that directory.
-
-## Local installation with Node.js
-
-Use Node.js **24.22.3+ within Node 24** (the
-version in `.nvmrc`), or **26.13.1+ within Node 26**, with npm.
-
-```sh
 npm ci
 npm run local
 ```
 
-Open **http://127.0.0.1:3000**. The first start builds Local Personal mode; later
-starts reuse a valid build. Stop with **Ctrl+C**. No `.env` file or cloud account
-is required for this path. The JavaScript launcher also supports PowerShell.
+Open **http://127.0.0.1:3000**. The first start builds Local Personal mode;
+later starts reuse a valid build. Stop with **Ctrl+C**. No `.env` file, cloud
+account or API key is required. The JavaScript launcher also supports PowerShell.
 
 If port 3000 is occupied, deliberately choose another stable address:
 
@@ -68,71 +123,99 @@ npm run local -- --port 3010
 ```
 
 Use `npm run local:build` to build without serving. After updating the source,
-run `npm ci` and `npm run local` again. Changed build inputs trigger a rebuild.
+run `npm ci` and `npm run local` again; changed build inputs trigger a rebuild.
 
-## Local installation with Docker
+### Docker
 
-Install and start Docker with Compose support, then run:
+Install and start Docker with Compose support. Host Node/npm are not required.
 
 ```sh
+git clone https://github.com/haiderhamad/InvestAtlas.git
+cd InvestAtlas
 docker compose up --build
 ```
 
-Open **http://127.0.0.1:3000**. Node/npm are not required on the host. The image
-is built from this source; no InvestAtlas registry image is assumed. Stop with
-**Ctrl+C**, then `docker compose down` to remove this Compose service. After a
-source update, run `docker compose up --build` again.
+Open **http://127.0.0.1:3000**. The image is built from this source; no InvestAtlas
+registry image is assumed. Stop with **Ctrl+C**, then `docker compose down` to
+remove this Compose service. After updating source, run `docker compose up --build`.
 
-For an occupied port, create an untracked `.env` beside `compose.yaml` with
-`INVESTATLAS_PORT=3010`, use the same command and open http://127.0.0.1:3010.
-Compose aligns the published and internal app ports. Only loopback is published;
-this does not enable phone/WLAN access.
+For an occupied port, create an untracked `.env` beside `compose.yaml` containing
+`INVESTATLAS_PORT=3010`, run the same command and open http://127.0.0.1:3010.
+Compose aligns internal and published ports. It publishes only to loopback.
 
-## First use and backups
+Phone access is an explicit trusted-WLAN setup, separate from the default local
+launcher/Compose configuration. See [phone access](docs/SELF_HOSTING.md#optional-phone-access-over-trusted-wlan).
 
-1. Review the in-app terms/privacy information.
-2. Open Settings → Data & Sync → Data Sources and deliberately activate sources
-   you are entitled to use, or connect your own supported keys.
-3. Open Accounts and add a financial account, such as a brokerage, bank account
-   or wallet, then enter or import its transactions. This is a portfolio record;
-   Local Personal does not require a sign-in account. Charts can also be explored
-   without recording a portfolio.
+### First use
 
-Local records stay in the **same browser profile and exact URL**. Different
-hostnames or ports select different browser workspaces. Docker volumes do not
-back up localStorage/IndexedDB. Records are not encrypted at rest; verify CSV
-export/restore before relying on backups. Keys, AI analysis and market-history
-caches are not included in CSV backups. Live data requires a network.
+1. Review the in-app terms and privacy information. Use **View Demo** if you want
+   to explore synthetic examples first, then **Start Local Workspace** for your records.
+2. Under **Settings → Data & Sync → Data Sources**, activate sources you are
+   entitled to use, or connect your own supported keys.
+3. In **Accounts**, add a financial account such as a brokerage, bank account or
+   wallet, then enter or import transactions. This records an account in your
+   portfolio; Local Personal requires no sign-in. Charts also work without holdings.
+4. Verify CSV export/restore under **Settings → Account → Account data** before
+   relying on a backup.
+
+Keep the **same browser profile and exact URL**. Different hostnames or ports
+select different local workspaces. Records are not encrypted at rest, and
+browser cleanup can erase them. Docker volumes do not back up browser data.
+CSV excludes API keys, AI analysis and market-history caches. Live data needs
+a network connection; local storage is not cross-device synchronization.
+
+## Market data and personal API keys
+
+| Source group | Implemented coverage |
+| --- | --- |
+| **Public sources, explicitly activated** | Yahoo stock/ETF quotes and EOD history; Gold API indicative gold/silver and BTC/ETH USD spot; CoinPaprika with a CoinGecko spot fallback; Binance/Kraken completed daily history for supported BTC/ETH pairs. ECB supplies reference FX. |
+| **Your market-data keys** | Tiingo, Twelve Data and Market Data API for their supported listings/capabilities; EODHD for compatible historical data. Plan, quota, listing identity and provider terms determine actual availability. |
+| **History reuse** | Checked ranges are reused to avoid unnecessary downloads. Licensed EODHD history and ECB reference rates can persist in device-local IndexedDB; Yahoo ranges stay in tab memory. |
+
+Sources are deliberately selected per session. Providers have different listing,
+currency, freshness and licensing constraints. Yahoo is unofficial. Universal
+realtime coverage, free five-year history for every instrument and an independent
+free physical-metal backup are not promised. Metal spot does not create candles;
+raw equity history may be unsuitable for indicators because of corporate actions.
+The app keeps partial/unavailable states visible.
+
+For AI-assisted document import, connect your own **OpenAI, Gemini, Groq or
+OpenRouter** key. Local keys stay in tab memory; the cloud path uses authenticated,
+encrypted provider storage. Only the selected highest-priority enabled provider
+receives a document, with no automatic fallback forwarding. Review extracted
+transactions before applying them. AI does not supply missing market data or
+screening fundamentals, and a generative portfolio adviser is not included.
+
+See [self-hosting](docs/SELF_HOSTING.md) for exact provider coverage, key handling,
+history retention, CSV limits and unavailable states.
 
 ## Host your own private cloud
 
-Follow [SELF_HOSTING](docs/SELF_HOSTING.md#mode-b-own-private-cloud-vercel-or-another-compatible-node-host).
-Use your own hosting and Firebase project, with `private_cloud` at build and
-runtime, an exact owner UID, generated owner-only Firestore rules and hosting
-access protection. Vercel hosts the Next.js app; Firebase supplies identity and
-cloud data storage. No owner account, credentials or portfolio data are supplied.
+| Mode | Intended use | Data and authentication |
+| --- | --- | --- |
+| `local_personal` | Node.js or Docker on your computer | Browser-local records; no Firebase account required |
+| `private_cloud` | Your own protected single-owner deployment | Your Firebase project, exact owner UID and restrictive rules |
+| `public_demo` | Optional illustrative website | Synthetic read-only data; no personal accounts or market APIs |
+
+Follow the [private-cloud guide](docs/SELF_HOSTING.md#mode-b-own-private-cloud-vercel-or-another-compatible-node-host).
+Vercel hosts the Next.js app; Firebase supplies authentication and cloud storage.
+Use your own projects, exact owner UID, owner-only Firestore rules and hosting
+access protection. No owner account, credentials or portfolio data are supplied.
 
 `.env.example` documents placeholders. Keep real secrets outside Git and browser
-`NEXT_PUBLIC_*` variables. Your private repository can carry personal code
-changes while taking updates from this public codebase; portfolio data and
-credentials remain separately stored and backed up.
+`NEXT_PUBLIC_*` variables. A separate private repository can hold your deployment
+changes while taking updates from this public codebase; credentials and portfolio
+backups remain separately stored.
 
-## Market data, limits and interpretation
+## Built with
 
-Sources are explicitly activated per session. Yahoo is unofficial; activation
-does not grant provider rights or bypass restrictions. Optional personal keys
-depend on the user's plan, quota, CORS and listing coverage. Universal realtime
-prices, an independent free metal backup and free five-year history for every
-instrument are not promised. Gold/silver spot does not create historical candles.
-Raw daily equity history may disable indicators because corporate actions can
-distort the series. Source/time and limitations remain visible. See the coverage
-and history sections in [SELF_HOSTING](docs/SELF_HOSTING.md).
+**Next.js · React · TypeScript · Tailwind CSS · Recharts**
 
-Screening, purification and tax calculations depend on input/evidence quality.
-Review the [Shariah screening protocol](docs/SHARIAH_SCREENING_PROTOCOL.md).
-This is an informational tool, not financial, tax, legal or religious advice.
+Optional cloud services: **Firebase Authentication and Firestore**. Local mode
+works without them. The app also includes a web manifest and PWA foundation;
+live prices and portfolio analysis still require network access.
 
-## Development checks
+## Development and verification
 
 ```sh
 npm test -- --runInBand
@@ -144,16 +227,25 @@ npm run i18n:check
 npm run local:build
 ```
 
-Cloud/Demo builds and optional emulator tests are documented in SELF_HOSTING.
-The clean export excludes five private Git-history/publication-audit tests that
-depend on excluded private history/manifests; functional/security tests remain.
-Original private tests are not weakened or deleted. Emulator instructions do not
-authorize changes to a live Firebase project.
+Node and Docker installations were independently verified from fresh GitHub
+clones on macOS ARM64 and Linux ARM64 for the v1.2.4 source publication. The
+checks include production start/restart, HTTP boundaries and desktop/mobile
+price/chart smoke tests. See [release status](RELEASE_STATUS.md) for scope and
+[SECURITY](SECURITY.md) for the retained Low test-tool advisory.
 
-## License
+Cloud/Demo builds and optional emulator tests are in [SELF_HOSTING](docs/SELF_HOSTING.md).
+The clean distribution excludes five tests tied to withheld private Git history
+and publication-audit files; functional/security tests remain. Emulator instructions
+do not authorize changes to a live Firebase project.
 
-Apache License 2.0 applies to original source the owner is entitled to license.
-See [LICENSE](LICENSE), [LICENSING](LICENSING.md) and
-[THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md). Dependencies, fonts, trademarks,
-icons and financial feeds retain their own terms. Source availability supplies
-no provider subscription or redistribution permission.
+## License and financial information
+
+[Apache License 2.0](LICENSE) applies to original source the owner is entitled
+to license. See [LICENSING](LICENSING.md), [asset provenance](ASSET_PROVENANCE.json)
+and [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md). The README's Gem mark retains
+Lucide's ISC notice; dependencies, fonts, trademarks and feeds keep their terms.
+Source availability supplies no provider subscription or redistribution permission.
+
+InvestAtlas is an informational tool. It provides no financial, investment,
+tax, legal or religious advice. Calculations and screening depend on input and
+evidence quality; review results before acting on them.

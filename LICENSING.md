@@ -26,6 +26,15 @@ historical artwork rights. Unused starter SVGs and legacy gold/silver photos
 also remain excluded. The provenance record is an engineering source/derivation
 record, not a trademark registration or legal opinion.
 
+The README wordmark reproduces the existing app's Gem-and-text identity. Its
+Gem paths retain Lucide's ISC copyright/permission notice in the SVG and in
+THIRD_PARTY_NOTICES; it is separate from the original app-icon generator above.
+Current README screenshots are actual browser captures with real provider
+observations, sources and timestamps, not historical posters or synthetic
+portfolio data. Their capture scope is recorded in [docs/media](docs/media/README.md).
+Market observations, third-party marks and externally rendered assets retain
+their respective terms; these screenshots supply no reusable market-data feed.
+
 Crypto icons and Google Fonts are fetched at runtime, rather than bundled as
 cleared project artwork. Their terms and network/privacy implications still
 apply. Dependency texts/notices are in [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md),
