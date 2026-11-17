@@ -4,8 +4,8 @@ import { INVESTATLAS_DEPLOYMENT_MODE } from '@/lib/runtime/deployment-mode';
 
 // A deliberate, owner-scoped choice for this browser tab. Never persist provider
 // permission in Firestore, localStorage, cookies, or the public Demo.
-export type PublicSourceId = 'yahoo' | 'spot' | 'coinpaprika' | 'coingecko' | 'binance' | 'kraken';
-const ALLOWED: readonly PublicSourceId[] = ['yahoo', 'spot', 'coinpaprika', 'coingecko', 'binance', 'kraken'];
+export type PublicSourceId = 'yahoo' | 'spot' | 'coinpaprika' | 'coingecko' | 'binance' | 'kraken' | 'bullion';
+const ALLOWED: readonly PublicSourceId[] = ['yahoo', 'spot', 'coinpaprika', 'coingecko', 'binance', 'kraken', 'bullion'];
 // Discovery, custom listings and multiyear requests require a fresh deliberate choice.
 const STORAGE_KEY = 'investatlas.public-sources.session.v3';
 export const PUBLIC_SOURCE_CONSENT_EVENT = 'investatlas:public-source-consent';

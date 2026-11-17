@@ -74,19 +74,19 @@ import {
 interface PricePoint {
   date: string;
   close: number;
-  open?: number;
-  high?: number;
-  low?: number;
-  volume?: number;
+  open?: number | null;
+  high?: number | null;
+  low?: number | null;
+  volume?: number | null;
 }
 
 function metalHistoryPerGram(points: PricePoint[]): PricePoint[] {
   return points.map((point) => ({
     ...point,
     close: point.close / TROY_OUNCE_GRAMS,
-    open: point.open === undefined ? undefined : point.open / TROY_OUNCE_GRAMS,
-    high: point.high === undefined ? undefined : point.high / TROY_OUNCE_GRAMS,
-    low: point.low === undefined ? undefined : point.low / TROY_OUNCE_GRAMS,
+    open: point.open == null ? point.open : point.open / TROY_OUNCE_GRAMS,
+    high: point.high == null ? point.high : point.high / TROY_OUNCE_GRAMS,
+    low: point.low == null ? point.low : point.low / TROY_OUNCE_GRAMS,
   }));
 }
 
@@ -272,6 +272,7 @@ interface HistoryResult {
   status: 'loading' | 'ready' | 'error';
   trust: HistoryTrustState | null;
   source: string | null;
+  closeOnly?: boolean;
   raw: boolean;
   error: string | null;
 }
@@ -303,7 +304,7 @@ export default function ChartsPage() {
   const [quoteResult, setQuoteResult] = useState<{ key: string; quote: ChartCurrentQuote | null } | null>(null);
   const [quoteRevision, setQuoteRevision] = useState(0);
   const [counterpartResult, setCounterpartResult] = useState<{ key: string; points: PricePoint[] } | null>(null);
-  const priceChartRef = useRef<HTMLDivElement>(null);
+  const [priceChartElement, setPriceChartElement] = useState<HTMLDivElement | null>(null);
   const [priceChartSize, setPriceChartSize] = useState({ width: 0, height: 500 });
   const [showGoldSilverRatio, setShowGoldSilverRatio] = useState(false);
   const [windowPosition, setWindowPosition] = useState<{ key: string; range: ChartRange; end: number } | null>(null);
@@ -355,7 +356,7 @@ export default function ChartsPage() {
   }, [demoAssets, user]);
 
   useEffect(() => {
-    const element = priceChartRef.current;
+    const element = priceChartElement;
     if (!element) return;
 
     const observer = new ResizeObserver(([entry]) => {
@@ -375,7 +376,7 @@ export default function ChartsPage() {
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [priceChartElement]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -558,6 +559,7 @@ export default function ChartsPage() {
             points: isMetal ? metalHistoryPerGram(data.prices) : data.prices,
             status: 'ready',
             source: market?.providerName ?? null,
+            closeOnly: data.prices.every((point: { dataQuality?: string }) => point.dataQuality === 'close_only'),
             trust: getHistoryTrustState(data),
             raw: data.adjustment === 'raw_unadjusted',
             error: null,
@@ -821,7 +823,7 @@ export default function ChartsPage() {
                 {loading ? <RefreshCw size={13} className="loading-spin" /> : <TrendingUp size={13} />}
                 {loading ? t('Loading history') : copy.points(visibleHistory.length, formatRangeLabel(selectedRange))}
               </span>
-              <span className="chart-freshness-label">{t(formatResolutionLabel(fetchInterval))} · {lastUpdatedLabel}</span>
+              <span className="chart-freshness-label">{t(result?.closeOnly ? 'Daily observations' : formatResolutionLabel(fetchInterval))} · {lastUpdatedLabel}</span>
             </div>
           </div>
         </div>
@@ -842,7 +844,7 @@ export default function ChartsPage() {
             <AlertTriangle size={18} style={{ color: 'var(--orange)', flexShrink: 0, marginTop: 2 }} />
             <div>
               {historyTrustState === 'stale'
-                ? t('Cached history is temporarily shown because live providers are unavailable. It may be up to 24 hours old.')
+                ? t('Saved history is shown because refresh is unavailable. Check the last observation date.')
                 : t('Historical data is partial. Some periods or fields may be unavailable.')}
             </div>
           </div>
@@ -1020,7 +1022,7 @@ export default function ChartsPage() {
               </span>
               <span className="status-pill neutral">
                 <TrendingUp size={13} />
-                {t(formatResolutionLabel(fetchInterval))}
+                {t(result?.closeOnly ? 'Daily observations' : formatResolutionLabel(fetchInterval))}
               </span>
                 </div>
                 <div className="security-profile-identifiers">
@@ -1111,7 +1113,7 @@ export default function ChartsPage() {
           </div>
 
           <div
-            ref={priceChartRef}
+            ref={setPriceChartElement}
             className={`asset-chart-surface ${!loading && error ? 'is-empty' : ''}`}
             style={{ width: '100%', minWidth: 0, touchAction: 'pan-y pinch-zoom', cursor: canPan ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
             tabIndex={0}

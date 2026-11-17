@@ -1,6 +1,6 @@
 export type PublicMarketCopyKey =
   | 'bannerTitle' | 'bannerBody' | 'openSettings' | 'sectionTitle' | 'intro'
-  | 'yahoo' | 'spot' | 'coinpaprika' | 'coingecko' | 'binance' | 'kraken' | 'fx'
+  | 'yahoo' | 'spot' | 'coinpaprika' | 'coingecko' | 'binance' | 'kraken' | 'bullion' | 'fx'
   | 'terms' | 'confirm' | 'activate' | 'update' | 'inactive' | 'active'
   | 'yahooNotice' | 'sessionNote' | 'providerNote' | 'twelveCoverage'
   | 'marketdataTitle' | 'marketdataInfo' | 'marketdataKey' | 'marketdataTerms'
@@ -17,6 +17,7 @@ const EN: Record<PublicMarketCopyKey, string> = {
   intro: 'No public quote requests are made from your personal workspace until you deliberately activate providers here.',
   yahoo: 'Yahoo Finance (unofficial): catalog and added stocks/ETFs with a verified EUR/USD listing; search, last reported prices and up to five years of daily history when available (no key)',
   spot: 'Gold API: indicative gold and silver USD spot per fine troy ounce, plus BTC and ETH USD spot (no key)',
+  bullion: 'Standard Bullion: free indicative gold and silver daily close history, up to five years when available; saved on this device as a fallback (no key)',
   coinpaprika: 'CoinPaprika Free: personal USD spot for all 27 catalog cryptocurrencies; batch cached for 15 minutes (no key)',
   coingecko: 'CoinGecko: optional low-frequency USD spot backup for 26 catalog cryptocurrencies; stale MATIC is rejected (no key)',
   binance: 'Binance: public BTC/EUR and ETH/EUR daily exchange candles (no key)',
@@ -37,8 +38,8 @@ const EN: Record<PublicMarketCopyKey, string> = {
   coverageCrypto: '27 cryptocurrencies: CoinPaprika covers the exact catalog coins; Gold API additionally supplies BTC and ETH. MATIC is never replaced by POL.',
   coverageCryptoBackup: 'CoinGecko is a separately enabled backup for 26 coins. Its legacy MATIC observation was stale during verification and is rejected. Both aggregators are cached for 15 minutes.',
   coverageMetals: 'Gold and silver: indicative Gold API spot in USD per fine troy ounce. Portfolio valuation converts to grams and applies the recorded fineness.',
-  coverageMetalBackup: 'No verified independent free metal backup is connected. An outage leaves metal prices unavailable; futures and backed tokens are not substitutes.',
-  coverageTiming: 'Prices refresh on request. Spot quotes do not supply chart history. Native EODHD history and ECB rates can remain on this device; Yahoo history is tab-only. Only missing ranges and the recent tail are refreshed. Provider access and five-year coverage depend on source and plan.',
+  coverageMetalBackup: 'Saved Standard Bullion history is the fallback when refresh fails, labelled with its data date. No second independent free daily-history feed is connected. Gold API spot remains separate; futures and backed tokens are not substitutes.',
+  coverageTiming: 'Prices refresh on request. Spot quotes do not supply chart history. Native EODHD and Standard Bullion history and ECB rates can remain on this device; Yahoo history is tab-only. Saved history is reused; download size depends on the source. Provider access and five-year coverage depend on source and plan.',
   twelveCoverage: 'Twelve Data: unadjusted daily quotes for supported US-listed stocks and US ETFs, subject to your plan, exchange, display rights and quota. European listings are not covered by this adapter. The API key alone does not grant display rights.',
   marketdataTitle: 'Market Data API (personal stocks and ETFs)',
   marketdataInfo: 'Optional US prices: SmartMid is a fast provider-calculated indicative midpoint, not an exchange last trade or NBBO quote. Free accounts allow 100 credits/day; cost is per symbol. Source time is shown and closed-market observations may be older. No European exchange coverage. Plan and rights apply.',
@@ -59,6 +60,7 @@ const DE: Record<PublicMarketCopyKey, string> = {
   intro: 'Dein persönlicher Workspace ruft keine öffentlichen Kursquellen ab, bevor du sie hier ausdrücklich aktivierst.',
   yahoo: 'Yahoo Finance (inoffiziell): Katalog und eigene Aktien/ETFs mit geprüftem EUR-/USD-Börsenplatz; Suche, zuletzt gemeldete Kurse und bis zu fünf Jahre Tageshistorie, soweit verfügbar (ohne Schlüssel)',
   spot: 'Gold API: indikative Spotpreise für Gold und Silber in USD je Feinunze sowie BTC und ETH in USD (ohne Schlüssel)',
+  bullion: 'Standard Bullion: kostenlose indikative Tageshistorie für Gold und Silber, bis zu fünf Jahre soweit verfügbar; auf diesem Gerät als Ersatz gespeichert (ohne Schlüssel)',
   coinpaprika: 'CoinPaprika Free: private USD-Spotpreise für alle 27 Kryptowährungen im Katalog; Sammelabfrage für 15 Minuten zwischengespeichert (ohne Schlüssel)',
   coingecko: 'CoinGecko: optionale USD-Spot-Ersatzquelle für 26 Kryptowährungen bei seltenen Abrufen; veraltetes MATIC wird verworfen (ohne Schlüssel)',
   binance: 'Binance: öffentliche BTC/EUR- und ETH/EUR-Tagesschlusskurse (ohne Schlüssel)',
@@ -79,8 +81,8 @@ const DE: Record<PublicMarketCopyKey, string> = {
   coverageCrypto: '27 Kryptowährungen: CoinPaprika deckt die genauen Coins im Katalog ab; Gold API liefert zusätzlich BTC und ETH. MATIC wird niemals durch POL ersetzt.',
   coverageCryptoBackup: 'CoinGecko ist eine separat aktivierbare Ersatzquelle für 26 Coins. Der alte MATIC-Kurs war bei der Prüfung veraltet und wird verworfen. Beide Sammelquellen werden für 15 Minuten zwischengespeichert.',
   coverageMetals: 'Gold und Silber: indikative Gold-API-Spotpreise in USD je Feinunze. Die Portfoliobewertung rechnet in Gramm um und berücksichtigt den erfassten Feingehalt.',
-  coverageMetalBackup: 'Keine verifizierte unabhängige kostenlose Metall-Ersatzquelle ist angebunden. Bei einem Ausfall bleiben Metallkurse unverfügbar; Futures und gedeckte Token ersetzen sie nicht.',
-  coverageTiming: 'Kurse werden auf Anfrage aktualisiert. Spotpreise liefern keine Charthistorie. Native EODHD-Historie und EZB-Kurse können auf diesem Gerät bleiben; Yahoo-Historie nur im Tab. Aktualisiert werden Lücken und die letzten Handelstage. Zugriff und Fünfjahresabdeckung hängen von Quelle und Tarif ab.',
+  coverageMetalBackup: "Gespeicherte Standard-Bullion-Historie dient bei Abruffehlern als Ersatz und zeigt ihren Datenstand. Eine zweite unabhängige kostenlose Tagesquelle ist nicht verbunden. Gold-API-Spotpreise bleiben separat; Futures und gedeckte Token sind kein Ersatz.",
+  coverageTiming: "Kurse werden auf Anfrage aktualisiert. Spotpreise liefern keine Charthistorie. Native EODHD- und Standard-Bullion-Historie sowie EZB-Kurse können auf diesem Gerät bleiben; Yahoo-Historie nur im Tab. Gespeicherte Historie wird wiederverwendet; die Abrufmenge hängt von der Quelle ab. Zugriff und Fünfjahresabdeckung hängen von Quelle und Tarif ab.",
   twelveCoverage: 'Twelve Data: unbereinigte Tagesschlusskurse für unterstützte US-Aktien und US-ETFs, abhängig von Tarif, Börsenplatz, Anzeigerechten und Kontingent. Europäische Listings sind in diesem Adapter nicht abgedeckt. Ein API-Schlüssel erteilt keine Anzeigerechte.',
   marketdataTitle: 'Market Data API (eigene Aktien- und ETF-Daten)',
   marketdataInfo: 'Optionale US-Preise: SmartMid ist ein schneller, berechneter Richtpreis des Anbieters, kein letzter Börsenhandel oder NBBO-Kurs. Kostenlos gibt es 100 Credits/Tag; berechnet wird je Symbol. Die Quellzeit wird angezeigt, bei geschlossenen Märkten kann sie älter sein. Keine europäischen Börsen. Tarif und Nutzungsrechte gelten.',
@@ -101,6 +103,7 @@ const AR: Record<PublicMarketCopyKey, string> = {
   intro: 'لن ترسل مساحة العمل الشخصية طلبات أسعار عامة حتى تختار المصادر وتفعّلها صراحة.',
   yahoo: 'Yahoo Finance (غير رسمي): الأسهم وصناديق ETF في القائمة أو المضافة بعد التحقق من إدراجها باليورو أو الدولار؛ البحث وآخر الأسعار وسجل يومي حتى خمس سنوات عند توفره، دون مفتاح',
   spot: 'Gold API: أسعار استرشادية للذهب والفضة بالدولار لكل أونصة ترويسية خالصة، وأسعار BTC وETH بالدولار دون مفتاح',
+  bullion: 'Standard Bullion: سجل يومي استرشادي مجاني للذهب والفضة حتى خمس سنوات عند توفره، يُحفظ على هذا الجهاز كنسخة احتياطية دون مفتاح',
   coinpaprika: 'CoinPaprika Free: أسعار فورية شخصية بالدولار لجميع العملات الرقمية الـ 27 في القائمة؛ تُحفظ الدفعة مؤقتًا لمدة 15 دقيقة دون مفتاح',
   coingecko: 'CoinGecko: مصدر بديل اختياري قليل الطلبات لـ 26 عملة بالدولار؛ تُرفض أسعار MATIC القديمة دون مفتاح',
   binance: 'Binance: شموع يومية عامة لـ BTC/EUR وETH/EUR دون مفتاح',
@@ -121,8 +124,8 @@ const AR: Record<PublicMarketCopyKey, string> = {
   coverageCrypto: '27 عملة رقمية: يغطي CoinPaprika العملات المحددة في القائمة، ويوفر Gold API أيضًا BTC وETH. لا يُستبدل MATIC بعملة POL تلقائيًا.',
   coverageCryptoBackup: 'CoinGecko مصدر بديل يُفعّل منفصلًا لـ 26 عملة. كان سعر MATIC القديم غير حديث عند التحقق ويُرفض. تُحفظ دفعتا المصدرين مؤقتًا لمدة 15 دقيقة.',
   coverageMetals: 'الذهب والفضة: أسعار Gold API الفورية الاسترشادية بالدولار لكل أونصة ترويسية خالصة. يحوّل تقييم المحفظة إلى الغرام ويطبق النقاوة المسجلة.',
-  coverageMetalBackup: 'لا يوجد مصدر مجاني مستقل موثّق بديل للمعادن متصل حاليًا. عند الانقطاع تبقى الأسعار غير متاحة؛ لا تحل العقود الآجلة أو العملات المغطاة محلها.',
-  coverageTiming: 'تُحدّث الأسعار عند الطلب. لا توفر الأسعار الفورية سجل المخططات. يمكن الاحتفاظ بسجل EODHD وأسعار الصرف المرجعية على هذا الجهاز؛ يبقى سجل Yahoo في التبويب فقط. تُحدّث الفجوات والأيام الأخيرة. يعتمد توفر خمس سنوات والاتصال على المصدر والخطة.',
+  coverageMetalBackup: 'سجل Standard Bullion المحفوظ هو البديل عند فشل التحديث مع إظهار تاريخ البيانات. لا يوجد مصدر يومي مجاني مستقل ثانٍ متصل. تبقى أسعار Gold API الفورية منفصلة؛ لا تحل العقود الآجلة أو العملات المغطاة محلها.',
+  coverageTiming: 'تُحدّث الأسعار عند الطلب. لا توفر الأسعار الفورية سجل المخططات. يمكن الاحتفاظ بسجل EODHD وStandard Bullion وأسعار الصرف المرجعية على هذا الجهاز؛ يبقى سجل Yahoo في التبويب فقط. يُعاد استخدام السجل المحفوظ؛ ويعتمد حجم التنزيل على المصدر. يعتمد توفر خمس سنوات والاتصال على المصدر والخطة.',
   twelveCoverage: 'Twelve Data: أسعار إغلاق يومية غير معدّلة لأسهم وصناديق ETF الأمريكية المدعومة بحسب الباقة والبورصة وحقوق العرض والحدود. الإدراجات الأوروبية غير مدعومة هنا. مفتاح API وحده لا يمنح حقوق العرض.',
   marketdataTitle: 'Market Data API (بيانات الأسهم والصناديق الشخصية)',
   marketdataInfo: 'أسعار أمريكية اختيارية: SmartMid سعر إرشادي سريع يحسبه المزود، وليس آخر صفقة في البورصة أو عرض NBBO. الحساب المجاني يتيح 100 رصيد يومياً وتُحسب التكلفة لكل رمز. يظهر وقت المصدر وقد يكون أقدم عند إغلاق السوق. لا يغطي البورصات الأوروبية. تُطبق شروط الخطة وحقوق الاستخدام.',

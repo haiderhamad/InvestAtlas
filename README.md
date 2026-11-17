@@ -19,9 +19,9 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/etf-desktop.png" width="1040" alt="InvestAtlas v1.2.4 desktop ETF chart in dark mode, displaying a real sourced quote, observation time and available historical prices">
+  <a href="docs/media/metals-iphone-pair.png"><img src="docs/media/metals-iphone-pair.png" width="980" alt="Gold and silver over five years in InvestAtlas. German and Arabic mobile charts show dated spot prices in euros per fine gram and the available price history."></a>
 </p>
-<p align="center"><em>Actual v1.2.4 interface with real provider prices captured on November 16, 2026. Screenshots are dated observations, not a live feed.</em></p>
+<p align="center">Historical closes · <a href="https://standardbullion.com/market-data">Data by Standard Bullion</a><br>Indicative spot · Gold API &nbsp;|&nbsp; EUR conversion · ECB</p>
 
 InvestAtlas brings portfolio tracking, market research and transparent Shariah
 screening into one personal workspace. It is built for investors who want to
@@ -74,25 +74,29 @@ they are not a religious ruling. See the
 
 ## Screenshots
 
-### ☀️ Desktop · Bitcoin in light theme
+### 📱 Gold and silver on mobile
 
-<p align="center">
-  <img src="docs/media/bitcoin-desktop.png" width="1040" alt="InvestAtlas Bitcoin chart in light mode with a real sourced price, historical coverage and provider attribution">
-</p>
+Open either original screenshot to read the quote and explore the layout at full size.
+Both were captured on November 17, 2026 in Chrome with an emulated iPhone viewport
+of 430 × 932 CSS pixels. Each five-year chart shows 595 available closes.
 
-### 📱 Mobile · German and Arabic/RTL
+| Original screenshot | Indicative spot price per fine gram | Quote time (UTC) | History through |
+| --- | ---: | --- | --- |
+| [Gold · German · dark](docs/media/gold-mobile-de.png) | €112.87 | 19:03 | Nov 15, 2026 |
+| [Silver · Arabic · light](docs/media/silver-mobile-ar.png) | €1.3836 | 19:05 | Nov 16, 2026 |
 
-<p align="center">
-  <img src="docs/media/gold-mobile-de.png" width="300" alt="German mobile Gold view with a real indicative spot price per fine gram, source and observation time">
-  &nbsp;&nbsp;
-  <img src="docs/media/silver-mobile-ar.png" width="300" alt="Arabic mobile Silver view with a real indicative spot price per fine gram, source and observation time in right-to-left layout">
-</p>
+Gold API supplies the spot observation, and the ECB reference rate supplies the
+EUR conversion. The line connects available historical closes. Gaps in the
+five-year window are possible. [Data by Standard Bullion](https://standardbullion.com/market-data).
 
-These browser captures use real market-provider responses in an empty Local
-Workspace. They show the price, source, currency/unit and observation time the app
-reported at capture. They contain no personal holdings or API keys. Metal spot and
-historical coverage are distinct; unavailable history stays labelled.
-[Image sources and capture details](docs/media/README.md).
+### Desktop charts
+
+| ETF · dark | Bitcoin · light |
+| --- | --- |
+| [![ISWD ETF with its dated quote and daily history](docs/media/etf-desktop.png)](docs/media/etf-desktop.png) | [![Bitcoin with its dated quote and daily history](docs/media/bitcoin-desktop.png)](docs/media/bitcoin-desktop.png) |
+
+These desktop views were captured on November 16, 2026. All screenshots use an empty
+Local Workspace with actual provider responses. [Capture details and image credits](docs/media/README.md).
 
 ## Quick start
 
@@ -168,15 +172,20 @@ a network connection; local storage is not cross-device synchronization.
 
 | Source group | Implemented coverage |
 | --- | --- |
-| **Public sources, explicitly activated** | Yahoo stock/ETF quotes and EOD history; Gold API indicative gold/silver and BTC/ETH USD spot; CoinPaprika with a CoinGecko spot fallback; Binance/Kraken completed daily history for supported BTC/ETH pairs. ECB supplies reference FX. |
+| **Public sources, explicitly activated** | Yahoo stock/ETF quotes and EOD history; Gold API indicative gold/silver and BTC/ETH USD spot; separately approved Standard Bullion physical-metal daily close history; CoinPaprika with a CoinGecko spot fallback; Binance/Kraken completed daily history for supported BTC/ETH pairs. ECB supplies reference FX. |
 | **Your market-data keys** | Tiingo, Twelve Data and Market Data API for their supported listings/capabilities; EODHD for compatible historical data. Plan, quota, listing identity and provider terms determine actual availability. |
-| **History reuse** | Checked ranges are reused to avoid unnecessary downloads. Licensed EODHD history and ECB reference rates can persist in device-local IndexedDB; Yahoo ranges stay in tab memory. |
+| **History reuse** | Checked ranges are reused to avoid unnecessary downloads. Native EODHD history, Standard Bullion close observations and ECB reference rates can persist in device-local IndexedDB; Yahoo ranges stay in tab memory. Saved metal history is a dated, labelled fallback when refresh fails. |
 
 Sources are deliberately selected per session. Providers have different listing,
 currency, freshness and licensing constraints. Yahoo is unofficial. Universal
 realtime coverage, free five-year history for every instrument and an independent
 free physical-metal backup are not promised. Metal spot does not create candles;
 raw equity history may be unsuitable for indicators because of corporate actions.
+Standard Bullion history contains close observations, with unavailable OHLC and
+volume left empty. Its required [Data by Standard Bullion](https://standardbullion.com/market-data)
+credit accompanies the charts. The cached fallback is not a second independent feed.
+Its validated five-year preset is saved once and reused for shorter chart ranges;
+observations can be sparse, so this does not promise a full daily calendar.
 The app keeps partial/unavailable states visible.
 
 For AI-assisted document import, connect your own **OpenAI, Gemini, Groq or
@@ -231,7 +240,7 @@ Node and Docker installations were independently verified from fresh GitHub
 clones on macOS ARM64 and Linux ARM64 for the v1.2.4 source publication. The
 checks include production start/restart, HTTP boundaries and desktop/mobile
 price/chart smoke tests. See [release status](RELEASE_STATUS.md) for scope and
-[SECURITY](SECURITY.md) for the retained Low test-tool advisory.
+[SECURITY](SECURITY.md) for the dated dependency audit and outstanding findings.
 
 Cloud/Demo builds and optional emulator tests are in [SELF_HOSTING](docs/SELF_HOSTING.md).
 The clean distribution excludes five tests tied to withheld private Git history

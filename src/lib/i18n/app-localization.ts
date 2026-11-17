@@ -7206,6 +7206,9 @@ const PATTERN_TRANSLATORS: PatternTranslator[] = [
 ];
 
 const V124_DE_TEXT: Record<string, string> = {
+  'Data by Standard Bullion': 'Data by Standard Bullion',
+  "Daily observations": "Tagesbeobachtungen",
+  "Saved history is shown because refresh is unavailable. Check the last observation date.": "Gespeicherte Historie wird angezeigt, weil die Aktualisierung nicht verfügbar ist. Beachte das Datum der letzten Beobachtung.",
   'Apple (AAPL) illustrative stock': 'Beispielhafte Apple-Aktie (AAPL)',
   'Atlas Synthetic Civic Commerce': 'Atlas – synthetisches Handelsunternehmen',
   'Islamic UCITS ETF (ISWD) illustrative holding': 'Beispielhafte Position im islamischen UCITS-ETF (ISWD)',
@@ -7291,6 +7294,9 @@ const V124_DE_TEXT: Record<string, string> = {
 };
 
 const V124_AR_TEXT: Record<string, string> = {
+  'Data by Standard Bullion': 'Data by Standard Bullion',
+  "Daily observations": "ملاحظات يومية",
+  "Saved history is shown because refresh is unavailable. Check the last observation date.": "يُعرض السجل المحفوظ لتعذّر التحديث. تحقّق من تاريخ آخر ملاحظة.",
   'Apple (AAPL) illustrative stock': 'سهم Apple توضيحي (AAPL)',
   'Atlas Synthetic Civic Commerce': 'شركة أطلس التجارية التجريبية',
   'Islamic UCITS ETF (ISWD) illustrative holding': 'حيازة توضيحية في صندوق UCITS إسلامي (ISWD)',

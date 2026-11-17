@@ -1,20 +1,20 @@
 {
   "schemaVersion": 2,
-  "preparedOn": "2026-11-16",
+  "preparedOn": "2026-11-17",
   "product": "InvestAtlas",
   "version": "1.2.4",
-  "status": "PUBLISHED_SOURCE",
+  "status": "SOURCE_RELEASE",
   "publicationDecision": "OWNER_AUTHORIZED_PUBLIC_COMMIT_AND_PUSH",
   "publicRepository": "https://github.com/haiderhamad/InvestAtlas",
-  "sourceUploaded": true,
+  "precedingPublicCommit": "7bcaeff3814902335fcb817109a874d0390ab189",
+  "historicalApplicationPublicationCommit": "078c838142f60abc3ea59646558a22597e257031",
   "modes": [
     "local_personal",
     "private_cloud",
     "public_demo"
   ],
-  "sourceFiles": 286,
-  "retainedTestFiles": 216,
-  "allApplicationSourceByteIdentical": true,
+  "sourceFiles": 287,
+  "retainedTestFiles": 219,
   "excludedPrivateAuditTests": [
     "apache-license-selection.test.ts",
     "historical-pem-triage.test.ts",
@@ -37,7 +37,10 @@
     "audit:history-excluded",
     "audit:assets"
   ],
-  "selfHashPolicy": "This manifest excludes itself; external checksums identify manifest and archive bytes.",
+  "verificationRecord": "RELEASE_STATUS.md",
+  "securityReview": "SECURITY.md",
+  "mediaProvenance": "docs/media/README.md",
+  "selfHashPolicy": "SHA-256 hashes cover each regular distribution file except SOURCE_MANIFEST.json itself.",
   "files": [
     {
       "path": ".dockerignore",
@@ -89,33 +92,33 @@
     },
     {
       "path": "LICENSING.md",
-      "sha256": "bad621d20c7d4a63b74eed510f524c0dac081210161826aaca8ef6a89721b79b",
-      "sourceSha256": "bad621d20c7d4a63b74eed510f524c0dac081210161826aaca8ef6a89721b79b",
+      "sha256": "2e9ffd34804e4bbb4209542b8e1aa6149484ddb899003b7b579b60e2dc1260dd",
+      "sourceSha256": "2e9ffd34804e4bbb4209542b8e1aa6149484ddb899003b7b579b60e2dc1260dd",
       "operation": "documentation"
     },
     {
       "path": "README.md",
-      "sha256": "6113aae705554eb05c387c4e4255c9dbac0bb75d06d42607df9a769b5351953c",
-      "sourceSha256": "6113aae705554eb05c387c4e4255c9dbac0bb75d06d42607df9a769b5351953c",
+      "sha256": "f1c4f692a963dbbf77317c23d7b29636ac1b83a2f38f686aed330ecfb6515776",
+      "sourceSha256": "f1c4f692a963dbbf77317c23d7b29636ac1b83a2f38f686aed330ecfb6515776",
       "operation": "documentation"
     },
     {
       "path": "RELEASE_STATUS.md",
-      "sha256": "ab61dd9505d7a8b58ecbcd2053e1bb06e70f0643385f9e62e64f5657d068d7c9",
-      "sourceSha256": "ab61dd9505d7a8b58ecbcd2053e1bb06e70f0643385f9e62e64f5657d068d7c9",
+      "sha256": "2899798092c3fcb17670ff1193de670ed53ee3e2f790e0efb31ae4ee54673451",
+      "sourceSha256": "2899798092c3fcb17670ff1193de670ed53ee3e2f790e0efb31ae4ee54673451",
       "operation": "documentation"
     },
     {
       "path": "SECURITY.md",
-      "sha256": "5fa125840e1bb089af6ff0b2f25993347ba4839d5520553fb25097e93743aa22",
-      "sourceSha256": "5fa125840e1bb089af6ff0b2f25993347ba4839d5520553fb25097e93743aa22",
-      "operation": "copy"
+      "sha256": "93a4459e005f222abc802c573397c08161de66544ebf9be9aec32963b5361602",
+      "sourceSha256": "93a4459e005f222abc802c573397c08161de66544ebf9be9aec32963b5361602",
+      "operation": "documentation"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",
-      "sha256": "15e5faf3f0e00a6430ba523c442e14c4865e6ee4048afcd7cf858a263d4bd731",
-      "sourceSha256": "15e5faf3f0e00a6430ba523c442e14c4865e6ee4048afcd7cf858a263d4bd731",
-      "operation": "copy"
+      "sha256": "00ce585a889f70d4975bb271b74419341fe4e1dafee61dd3fa8066f9edf7a83c",
+      "sourceSha256": "00ce585a889f70d4975bb271b74419341fe4e1dafee61dd3fa8066f9edf7a83c",
+      "operation": "documentation"
     },
     {
       "path": "__tests__/accounts/account-detail.test.ts",
@@ -371,9 +374,9 @@
     },
     {
       "path": "__tests__/charts/asset-chart-page.test.tsx",
-      "sha256": "ed1f9d6ddde56b1317570e1b16f4385ec205d9c6ab5eec0fc9b56007f45d2e52",
-      "sourceSha256": "ed1f9d6ddde56b1317570e1b16f4385ec205d9c6ab5eec0fc9b56007f45d2e52",
-      "operation": "copy"
+      "sha256": "37f6dc0a50c8c998cecfc83802175ff03293962fe8bc586e5303edb187332086",
+      "sourceSha256": "37f6dc0a50c8c998cecfc83802175ff03293962fe8bc586e5303edb187332086",
+      "operation": "test"
     },
     {
       "path": "__tests__/charts/chart-localization.test.ts",
@@ -682,6 +685,24 @@
       "operation": "copy"
     },
     {
+      "path": "__tests__/financial-data/metal-close-only-cache.test.ts",
+      "sha256": "24f385a1d262c632f95012edd0a32ce30a039e350402c6b8dc1a39e11e561bc4",
+      "sourceSha256": "24f385a1d262c632f95012edd0a32ce30a039e350402c6b8dc1a39e11e561bc4",
+      "operation": "test"
+    },
+    {
+      "path": "__tests__/financial-data/metals-history-integration.test.ts",
+      "sha256": "6d9462b5c02ea5174a43fced12a5377392157f7a7bad419e58482fefa6607471",
+      "sourceSha256": "6d9462b5c02ea5174a43fced12a5377392157f7a7bad419e58482fefa6607471",
+      "operation": "test"
+    },
+    {
+      "path": "__tests__/financial-data/metals-local-workspace.test.ts",
+      "sha256": "401374f7c3f801d6dea7578cb618629b0b273ae2d460e19aa2351e5e201194ab",
+      "sourceSha256": "401374f7c3f801d6dea7578cb618629b0b273ae2d460e19aa2351e5e201194ab",
+      "operation": "test"
+    },
+    {
       "path": "__tests__/financial-data/personal-browser-market-data.test.ts",
       "sha256": "d9b9d7143ec93b80575f0179a17bea18ac6149b97c23df97484a5043bb8551cd",
       "sourceSha256": "d9b9d7143ec93b80575f0179a17bea18ac6149b97c23df97484a5043bb8551cd",
@@ -797,9 +818,9 @@
     },
     {
       "path": "__tests__/financial-data/public-price-coverage-settings.test.tsx",
-      "sha256": "5b18e00acc31ff4b689d334cb9069ed4a2df7d1e40631fa224055a984b0967dd",
-      "sourceSha256": "5b18e00acc31ff4b689d334cb9069ed4a2df7d1e40631fa224055a984b0967dd",
-      "operation": "copy"
+      "sha256": "229eb21c99277a46e0f26e404c9186ac6bc847014c32a9c39bc9fb51719899b6",
+      "sourceSha256": "229eb21c99277a46e0f26e404c9186ac6bc847014c32a9c39bc9fb51719899b6",
+      "operation": "test"
     },
     {
       "path": "__tests__/financial-data/public-source-consent.test.ts",
@@ -1421,9 +1442,9 @@
     },
     {
       "path": "docs/SELF_HOSTING.md",
-      "sha256": "5811bdf5dd9017771efc06b1760710f463ddd8fcda50255e5810f614ac7a8922",
-      "sourceSha256": "5811bdf5dd9017771efc06b1760710f463ddd8fcda50255e5810f614ac7a8922",
-      "operation": "copy"
+      "sha256": "34de1cfcce4524044c8f94ced46b72378e8c7e478f1c156f7afb03d8117055aa",
+      "sourceSha256": "34de1cfcce4524044c8f94ced46b72378e8c7e478f1c156f7afb03d8117055aa",
+      "operation": "documentation"
     },
     {
       "path": "docs/SHARIAH_SCREENING_PROTOCOL.md",
@@ -1433,8 +1454,8 @@
     },
     {
       "path": "docs/media/README.md",
-      "sha256": "d31deb6c3b225749b3a6f9682ef1f3a32f05da026bcaf7eb4c30d42a90aee863",
-      "sourceSha256": "d31deb6c3b225749b3a6f9682ef1f3a32f05da026bcaf7eb4c30d42a90aee863",
+      "sha256": "52fcd9ccadfc480a44a37c7de6a43c9e5704fd100de5b25c4706391ecd18427c",
+      "sourceSha256": "52fcd9ccadfc480a44a37c7de6a43c9e5704fd100de5b25c4706391ecd18427c",
       "operation": "documentation"
     },
     {
@@ -1451,8 +1472,8 @@
     },
     {
       "path": "docs/media/gold-mobile-de.png",
-      "sha256": "7f0b9b9cb74e199fb67ac491500aa3ee4ab7a198ad39bdc9951fceb384f44079",
-      "sourceSha256": "7f0b9b9cb74e199fb67ac491500aa3ee4ab7a198ad39bdc9951fceb384f44079",
+      "sha256": "5454f1b29760e9a3c54e323a0b2836937f8e3a1a6fc44cddfdd484214629d2e4",
+      "sourceSha256": "5454f1b29760e9a3c54e323a0b2836937f8e3a1a6fc44cddfdd484214629d2e4",
       "operation": "documentation"
     },
     {
@@ -1462,9 +1483,21 @@
       "operation": "documentation"
     },
     {
+      "path": "docs/media/metals-iphone-pair.png",
+      "sha256": "3bb08efa41338f38315573a2a886136925a5a1122887d4dd6b0702f649fd7b90",
+      "sourceSha256": "3bb08efa41338f38315573a2a886136925a5a1122887d4dd6b0702f649fd7b90",
+      "operation": "documentation"
+    },
+    {
+      "path": "docs/media/metals-iphone-stage.html",
+      "sha256": "6cf13f78a854a67954fbf7a13cf871f0270d71aab120dd11e6f45242e6298102",
+      "sourceSha256": "6cf13f78a854a67954fbf7a13cf871f0270d71aab120dd11e6f45242e6298102",
+      "operation": "documentation"
+    },
+    {
       "path": "docs/media/silver-mobile-ar.png",
-      "sha256": "aa5dabe1045b84ecfc3c7c9c3071c5406de66480d5a6e826f12c1a594a51a80c",
-      "sourceSha256": "aa5dabe1045b84ecfc3c7c9c3071c5406de66480d5a6e826f12c1a594a51a80c",
+      "sha256": "d5944e8ae5e08be1bb85fb66e1c8eb66c2efea9b10a8975ff52e1933d7d5c872",
+      "sourceSha256": "d5944e8ae5e08be1bb85fb66e1c8eb66c2efea9b10a8975ff52e1933d7d5c872",
       "operation": "documentation"
     },
     {
@@ -1499,20 +1532,20 @@
     },
     {
       "path": "next.config.ts",
-      "sha256": "a9e822abfb4642a22c34415b5dba310d1a8a31932e9cbbabd514f5bd7ce6d66b",
-      "sourceSha256": "a9e822abfb4642a22c34415b5dba310d1a8a31932e9cbbabd514f5bd7ce6d66b",
-      "operation": "copy"
+      "sha256": "d97874002425f291a26c7ebf140039f8b6cffa0eb7d27ab9fe270901c9b4b6b0",
+      "sourceSha256": "d97874002425f291a26c7ebf140039f8b6cffa0eb7d27ab9fe270901c9b4b6b0",
+      "operation": "distribution metadata"
     },
     {
       "path": "package-lock.json",
-      "sha256": "8beaf1db095cf7b34b32bd54a29951b31f3392f05dd5b9ec1aa5832857e0d628",
-      "sourceSha256": "8beaf1db095cf7b34b32bd54a29951b31f3392f05dd5b9ec1aa5832857e0d628",
-      "operation": "copy"
+      "sha256": "df346559303e391f95af34b0329442d031d82773991fe4a31accc247aa6ecb4e",
+      "sourceSha256": "df346559303e391f95af34b0329442d031d82773991fe4a31accc247aa6ecb4e",
+      "operation": "distribution metadata"
     },
     {
       "path": "package.json",
-      "sha256": "83cafb9b0cb89510696457c6db04f968e216625188ed1c605da5515b697959c7",
-      "sourceSha256": "c1917c52fbc240b420d06fe68873398a212849eadd6dddb4e8a88f1ce6022e84",
+      "sha256": "94ff12814a052421fa9eb67c9e69a31e9119379c6150c7a5358c91549bbc2ae3",
+      "sourceSha256": "94ff12814a052421fa9eb67c9e69a31e9119379c6150c7a5358c91549bbc2ae3",
       "operation": "distribution metadata"
     },
     {
@@ -1907,9 +1940,9 @@
     },
     {
       "path": "src/app/charts/page.tsx",
-      "sha256": "23a3127c1234c80aca65d69a128520600b0c74cfd5413a49208051a592972572",
-      "sourceSha256": "23a3127c1234c80aca65d69a128520600b0c74cfd5413a49208051a592972572",
-      "operation": "copy"
+      "sha256": "d86a15d647b4135a5d562aaf3f71bd51c46cbe7d16d00c82b63b18c72508f05a",
+      "sourceSha256": "d86a15d647b4135a5d562aaf3f71bd51c46cbe7d16d00c82b63b18c72508f05a",
+      "operation": "application"
     },
     {
       "path": "src/app/dividends/page.tsx",
@@ -2111,9 +2144,9 @@
     },
     {
       "path": "src/components/financial/personal-price-attribution.tsx",
-      "sha256": "e23455307b8d0e0e10e428114de4bddf484b442e1d40b2e71fa7ebf2a79827a7",
-      "sourceSha256": "e23455307b8d0e0e10e428114de4bddf484b442e1d40b2e71fa7ebf2a79827a7",
-      "operation": "copy"
+      "sha256": "b0ee4503a58826707a50d1915cdb4d3b51cfdedd6dfa0e0c519795e6131dd6c1",
+      "sourceSha256": "b0ee4503a58826707a50d1915cdb4d3b51cfdedd6dfa0e0c519795e6131dd6c1",
+      "operation": "application"
     },
     {
       "path": "src/components/i18n/html-locale-sync.tsx",
@@ -2237,9 +2270,9 @@
     },
     {
       "path": "src/components/settings/personal-history-settings.tsx",
-      "sha256": "c223a347de595e2244befce659225aefbec473bbeaf2dbf5f9e94e6553c6ddce",
-      "sourceSha256": "c223a347de595e2244befce659225aefbec473bbeaf2dbf5f9e94e6553c6ddce",
-      "operation": "copy"
+      "sha256": "1eeefa231395a3f574fc6187596dffd4f534801d6808c6a695c5eb95a631472e",
+      "sourceSha256": "1eeefa231395a3f574fc6187596dffd4f534801d6808c6a695c5eb95a631472e",
+      "operation": "application"
     },
     {
       "path": "src/components/settings/personal-market-sources.tsx",
@@ -2255,15 +2288,15 @@
     },
     {
       "path": "src/components/settings/public-market-consent-copy.ts",
-      "sha256": "3bfd1680b629fa0adea9bee4c3c3b8dd7ec13e92817bffc93007eb9f217f2fc2",
-      "sourceSha256": "3bfd1680b629fa0adea9bee4c3c3b8dd7ec13e92817bffc93007eb9f217f2fc2",
-      "operation": "copy"
+      "sha256": "4e1a1dba864bced36cbf2124793f0b37cf60594c3f47367b850a8028406c2759",
+      "sourceSha256": "4e1a1dba864bced36cbf2124793f0b37cf60594c3f47367b850a8028406c2759",
+      "operation": "application"
     },
     {
       "path": "src/components/settings/public-market-session-consent.tsx",
-      "sha256": "2112e662ecb0a9ed5755c20123891ab2594f8e7d9354a44fdfb97e06560999f7",
-      "sourceSha256": "2112e662ecb0a9ed5755c20123891ab2594f8e7d9354a44fdfb97e06560999f7",
-      "operation": "copy"
+      "sha256": "5c5ea665a28f674d754ca362fd6db752f603db844e2b4061dc81ed40fe37f28b",
+      "sourceSha256": "5c5ea665a28f674d754ca362fd6db752f603db844e2b4061dc81ed40fe37f28b",
+      "operation": "application"
     },
     {
       "path": "src/components/settings/purification-panel.tsx",
@@ -2663,9 +2696,9 @@
     },
     {
       "path": "src/lib/financial-data/history/cache/index.ts",
-      "sha256": "aed2bc77b22fe56828f32925e0599d1a245d6d024812fb12998a2f14d9bd496c",
-      "sourceSha256": "aed2bc77b22fe56828f32925e0599d1a245d6d024812fb12998a2f14d9bd496c",
-      "operation": "copy"
+      "sha256": "7be2f2ff7d1a72ad6bcf9d6db7b7d4991e45a80e251af8ab2345b99f91adc2ba",
+      "sourceSha256": "7be2f2ff7d1a72ad6bcf9d6db7b7d4991e45a80e251af8ab2345b99f91adc2ba",
+      "operation": "application"
     },
     {
       "path": "src/lib/financial-data/history/cache/ranges.ts",
@@ -2675,21 +2708,21 @@
     },
     {
       "path": "src/lib/financial-data/history/cache/repository.ts",
-      "sha256": "213a17b38a3ea2bf5c6e360208215ed01fc94cf586d1f68bb4c0b60668e45074",
-      "sourceSha256": "213a17b38a3ea2bf5c6e360208215ed01fc94cf586d1f68bb4c0b60668e45074",
-      "operation": "copy"
+      "sha256": "976ebcd001ce029092a7f3eeae7cb4ef1ae2da8d37d68d95923e8206a83fe503",
+      "sourceSha256": "976ebcd001ce029092a7f3eeae7cb4ef1ae2da8d37d68d95923e8206a83fe503",
+      "operation": "application"
     },
     {
       "path": "src/lib/financial-data/history/cache/types.ts",
-      "sha256": "58c24ff7f7b57db2fdd83246322b6846f2cfe4712996a7fa233aed06ecc69168",
-      "sourceSha256": "58c24ff7f7b57db2fdd83246322b6846f2cfe4712996a7fa233aed06ecc69168",
-      "operation": "copy"
+      "sha256": "567714c0f3a35cfd9b5faa6057521818a86b50370975fc51b3ef6645cb9ec356",
+      "sourceSha256": "567714c0f3a35cfd9b5faa6057521818a86b50370975fc51b3ef6645cb9ec356",
+      "operation": "application"
     },
     {
       "path": "src/lib/financial-data/history/cache/validation.ts",
-      "sha256": "dae45f6d5d22fa1c369bdc000c43ab633c4a2cf3e1741433ad57271d75d3cb47",
-      "sourceSha256": "dae45f6d5d22fa1c369bdc000c43ab633c4a2cf3e1741433ad57271d75d3cb47",
-      "operation": "copy"
+      "sha256": "b1a31f13a7c1be2f622b8f18f31278f1f6872c6426ab721f609cac8932b21802",
+      "sourceSha256": "b1a31f13a7c1be2f622b8f18f31278f1f6872c6426ab721f609cac8932b21802",
+      "operation": "application"
     },
     {
       "path": "src/lib/financial-data/history/recency.ts",
@@ -2777,9 +2810,9 @@
     },
     {
       "path": "src/lib/financial-data/providers/personal-history-service.ts",
-      "sha256": "e5fed23f765f9d7a984ad41fdb9044394fe8d6145ebfe2d5f347d52f9dc33860",
-      "sourceSha256": "e5fed23f765f9d7a984ad41fdb9044394fe8d6145ebfe2d5f347d52f9dc33860",
-      "operation": "copy"
+      "sha256": "8dc9f49f640f184a26734eea87ac0dd554a31413e8f3231fedbf063e998037b4",
+      "sourceSha256": "8dc9f49f640f184a26734eea87ac0dd554a31413e8f3231fedbf063e998037b4",
+      "operation": "application"
     },
     {
       "path": "src/lib/financial-data/providers/personal-market-data.ts",
@@ -2825,15 +2858,21 @@
     },
     {
       "path": "src/lib/financial-data/providers/public-source-consent.ts",
-      "sha256": "3533cd8f63f35e70b65a137681a5ce821390f7e6e04a1bc92e2b6d06ffa25fdc",
-      "sourceSha256": "3533cd8f63f35e70b65a137681a5ce821390f7e6e04a1bc92e2b6d06ffa25fdc",
-      "operation": "copy"
+      "sha256": "e3292c64c8a17502e949d8936722bbf03c7a69f2e1ade0c0866bf2e416e4d46b",
+      "sourceSha256": "e3292c64c8a17502e949d8936722bbf03c7a69f2e1ade0c0866bf2e416e4d46b",
+      "operation": "application"
     },
     {
       "path": "src/lib/financial-data/providers/source-selection.ts",
-      "sha256": "2105e69c8a7d19b8ccfe8ec6239276c0cd73d99dda85266d3ee69cf644e3f084",
-      "sourceSha256": "2105e69c8a7d19b8ccfe8ec6239276c0cd73d99dda85266d3ee69cf644e3f084",
-      "operation": "copy"
+      "sha256": "7507f2deb6e2cbfe2428e6845a6c2c0bd2bd17d3d8e49c2ed9b9c174ed5b5418",
+      "sourceSha256": "7507f2deb6e2cbfe2428e6845a6c2c0bd2bd17d3d8e49c2ed9b9c174ed5b5418",
+      "operation": "application"
+    },
+    {
+      "path": "src/lib/financial-data/providers/standard-bullion-history.ts",
+      "sha256": "d466cd8ab842ffa7342aae72c590e259f3840ac30548d1b7a4d93969b4e6aa2e",
+      "sourceSha256": "d466cd8ab842ffa7342aae72c590e259f3840ac30548d1b7a4d93969b4e6aa2e",
+      "operation": "application"
     },
     {
       "path": "src/lib/financial-data/providers/tiingo-asset-scope.ts",
@@ -2843,9 +2882,9 @@
     },
     {
       "path": "src/lib/financial-data/providers/tiingo-browser-market-data.ts",
-      "sha256": "91c7ec0cb493c6de533ddf56c6778125538070e58888e33c5328b03b56df26ec",
-      "sourceSha256": "91c7ec0cb493c6de533ddf56c6778125538070e58888e33c5328b03b56df26ec",
-      "operation": "copy"
+      "sha256": "38ad9fa9f3390f5d9d34c2d0fa9b689980412775dbf5f5c40668d1af382470ac",
+      "sourceSha256": "38ad9fa9f3390f5d9d34c2d0fa9b689980412775dbf5f5c40668d1af382470ac",
+      "operation": "application"
     },
     {
       "path": "src/lib/financial-data/providers/tiingo-browser.ts",
@@ -2945,9 +2984,9 @@
     },
     {
       "path": "src/lib/i18n/app-localization.ts",
-      "sha256": "55267f53f18c63cd939e8c16ba9ed56510eb5392530a8f91cd3eda2bc6d38aad",
-      "sourceSha256": "55267f53f18c63cd939e8c16ba9ed56510eb5392530a8f91cd3eda2bc6d38aad",
-      "operation": "copy"
+      "sha256": "3e05109510ed038f49e9e409a3308a15173974c53eb74feca452ae29f71099ce",
+      "sourceSha256": "3e05109510ed038f49e9e409a3308a15173974c53eb74feca452ae29f71099ce",
+      "operation": "application"
     },
     {
       "path": "src/lib/i18n/use-app-translation.ts",
@@ -2999,9 +3038,9 @@
     },
     {
       "path": "src/lib/legal/personal-market-disclosure.ts",
-      "sha256": "515bb370f8dfe2d0868ce52e1a93bf720168f3aaf97571d1185c28a433026288",
-      "sourceSha256": "515bb370f8dfe2d0868ce52e1a93bf720168f3aaf97571d1185c28a433026288",
-      "operation": "copy"
+      "sha256": "2d42b9df9dce5a10a8be7c12672bf4f854fe57377203fa8abbb95d96aca83560",
+      "sourceSha256": "2d42b9df9dce5a10a8be7c12672bf4f854fe57377203fa8abbb95d96aca83560",
+      "operation": "application"
     },
     {
       "path": "src/lib/legal/product-legal.ts",
@@ -3345,61 +3384,5 @@
       "sourceSha256": "4e683bd18ec1a556ffcd2e6c3d452900614c3fa3f0b8ab4650c99acd97909788",
       "operation": "copy"
     }
-  ],
-  "installationVerification": {
-    "node": "PASS",
-    "docker": "PASS",
-    "validatedInputArchiveSha256": "5dfc1a9fefebfc1846e60cad324a6d46da78be4e302494c28a7749f0ee502603",
-    "nodePlatform": "macOS ARM64",
-    "dockerPlatform": "Linux ARM64",
-    "metadataOnlyRefresh": false,
-    "sourcePushPerformed": true,
-    "documentationOnlyRefresh": true,
-    "remoteFullSourceCloneVerified": true,
-    "verifiedGitCommit": "078c838142f60abc3ea59646558a22597e257031",
-    "checkedOn": "2026-11-16"
-  },
-  "documentationChangesFromR4": [
-    "LICENSING.md",
-    "README.md",
-    "RELEASE_STATUS.md",
-    "SECURITY.md",
-    "SOURCE_MANIFEST.json",
-    "docs/SELF_HOSTING.md"
-  ],
-  "maintainerDecisions": {
-    "decidedOn": "2026-11-14",
-    "legacyPublicPosters": "Four exact posters removed from published main with owner approval; original public history unchanged; historical rights not cleared by tip removal",
-    "developmentAdvisory": "Retain documented Low deepmerge/Jest finding for now; no dependency change or suppression",
-    "publicationAuthorized": true
-  },
-  "documentationChangesFromR6": [
-    "README.md",
-    "LICENSING.md",
-    "SECURITY.md",
-    "docs/SELF_HOSTING.md",
-    "RELEASE_STATUS.md",
-    "SOURCE_MANIFEST.json"
-  ],
-  "currentRegistryAudit": {
-    "checkedOn": "2026-11-16",
-    "productionAdvisories": 0,
-    "developmentAffectedEntries": 6,
-    "developmentAdvisoryFamilies": 1,
-    "maintainerDisposition": "Retain documented Low finding for now; decision recorded 2026-11-14"
-  },
-  "publicationPreparation": {
-    "readmePreparedForSourceConsumers": true,
-    "sourceUploaded": true,
-    "commitCreated": true,
-    "hostingBindingsInspectedReadOnly": true,
-    "operatorSpecificConnectionEvidenceExcluded": true
-  },
-  "applicationPublicationCommit": "078c838142f60abc3ea59646558a22597e257031",
-  "readmeRefresh": {
-    "checkedOn": "2026-11-16",
-    "applicationUnchanged": true,
-    "images": "Real sourced ETF, Bitcoin, gold and silver observations in empty Local Personal workspace; see docs/media/README.md",
-    "syntheticScreenshotData": false
-  }
+  ]
 }

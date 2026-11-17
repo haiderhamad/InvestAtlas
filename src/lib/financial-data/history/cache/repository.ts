@@ -29,8 +29,19 @@ interface StoredRecord {
   record: HistoryCacheRecord;
 }
 
-const APPROVED_PROVIDERS = new Set(['eodhd_personal_daily', 'ecb_reference_rates']);
+const APPROVED_PROVIDERS = new Set(['eodhd_personal_daily', 'ecb_reference_rates', 'standard_bullion_daily']);
 const DATABASE_NAME = 'investatlas-native-history-v1';
+
+function retainKey(key: HistoryCacheKey): boolean {
+  if (!APPROVED_PROVIDERS.has(key.providerId)) return false;
+  return key.providerId !== 'standard_bullion_daily' || (['XAU', 'XAG'].includes(key.instrument)
+    && key.currency === 'USD' && key.exchange === 'INDICATIVE_DEALER' && key.adjustment === 'raw_unadjusted');
+}
+
+function retainRecord(record: HistoryCacheRecord): boolean {
+  return retainKey(record.key) && record.bars.every(bar => record.key.providerId === 'standard_bullion_daily'
+    ? bar.dataQuality === 'close_only' : bar.open !== null);
+}
 
 function requestResult<T>(request: IDBRequest<T>, success: (value: T) => void, fail: () => void): void {
   request.onerror = fail;
@@ -153,7 +164,7 @@ class BrowserHistoryRepository implements HistoryRepository {
 
   async read(input: HistoryCacheKey): Promise<HistoryCacheRecord | null> {
     const key = normalizeHistoryKey(input);
-    if (!key || !APPROVED_PROVIDERS.has(key.providerId)) return null;
+    if (!key || !retainKey(key)) return null;
     const id = historyKeyId(key);
     const ownerId = historyOwnerId(key.installation, key.owner);
     const generation = this.generations.get(ownerId) ?? 0;
@@ -165,7 +176,7 @@ class BrowserHistoryRepository implements HistoryRepository {
         });
         if ((this.generations.get(ownerId) ?? 0) !== generation) return null;
         const record = normalizeHistoryRecord(stored?.record, Date.now());
-        if (record && historyKeyId(record.key) === id) this.remember(record);
+        if (record && retainRecord(record) && historyKeyId(record.key) === id) this.remember(record);
         else this.memory.delete(id);
       } catch { this.fallback('storage_error'); }
     }
@@ -175,7 +186,7 @@ class BrowserHistoryRepository implements HistoryRepository {
 
   async write(input: HistoryCacheRecord, expectedOwnerEpoch?: number, signal?: AbortSignal): Promise<boolean> {
     const record = normalizeHistoryRecord(input, Date.now());
-    if (signal?.aborted || !record || !APPROVED_PROVIDERS.has(record.key.providerId)
+    if (signal?.aborted || !record || !retainRecord(record)
       || (expectedOwnerEpoch !== undefined && (!Number.isSafeInteger(expectedOwnerEpoch) || expectedOwnerEpoch < 0))) return false;
     const id = historyKeyId(record.key);
     const ownerId = historyOwnerId(record.key.installation, record.key.owner);
@@ -267,7 +278,7 @@ class BrowserHistoryRepository implements HistoryRepository {
         const records = stored.map(entry => normalizeHistoryRecord(entry.record, Date.now()))
           .filter((record): record is HistoryCacheRecord => record !== null
             && record.key.installation === installation && record.key.owner === owner
-            && APPROVED_PROVIDERS.has(record.key.providerId));
+            && retainRecord(record));
         if ((this.generations.get(ownerId) ?? 0) === generation) {
           return { recordCount: records.length, barCount: records.reduce((total, record) => total + record.bars.length, 0), persistence: this.persistence };
         }

@@ -4,7 +4,7 @@ import { getPersonalAssetConfig, getPersonalListingIdentity, USER_ASSETS_CHANGE_
 import { ANONYMOUS_WORKSPACE_MODE_EVENT } from '@/lib/demo/workspace-mode';
 import {
   getHistoryRepository, mergeHistoryRecord, planHistoryRanges,
-  type DailyHistoryBar, type HistoryCacheKey, type HistoryCacheRecord, type HistoryRange,
+  type HistoryBar, type HistoryCacheKey, type HistoryCacheRecord, type HistoryRange,
 } from '@/lib/financial-data/history/cache';
 import { normalizePersonalHistoryRange } from '@/lib/financial-data/history/request';
 import { INVESTATLAS_DEPLOYMENT_MODE } from '@/lib/runtime/deployment-mode';
@@ -22,8 +22,9 @@ import {
 } from './tiingo-browser';
 import { activeMarketOwner, hasTwelve, loadTwelve, loadTwelveDemo, supportsTwelve } from './twelve-personal';
 import { loadYahooPersonalDailySeries } from './yahoo-personal';
+import { loadStandardBullionHistory } from './standard-bullion-history';
 
-export type PersonalHistorySource = 'yahoo' | 'eodhd' | 'tiingo' | 'twelve' | 'marketdata' | 'binance' | 'kraken' | 'twelve_demo';
+export type PersonalHistorySource = 'yahoo' | 'eodhd' | 'tiingo' | 'twelve' | 'marketdata' | 'binance' | 'kraken' | 'bullion' | 'twelve_demo';
 export interface HybridDailySeries {
   providerId: string;
   assetSymbol: string;
@@ -33,7 +34,7 @@ export interface HybridDailySeries {
   retrievedAt: string;
   latestObservationAt: string | null;
   cacheStatus: 'miss' | 'hit_fresh' | 'hit_stale';
-  bars: DailyHistoryBar[];
+  bars: HistoryBar[];
   adjustment: 'raw_unadjusted';
   volumeAdjustment?: string;
   requestedRange: HistoryRange;
@@ -100,6 +101,7 @@ function enabled(source: PersonalHistorySource, owner: string, symbol: string): 
   if (!activeMarketOwner(owner) || clearingOwners.has(owner)) return false;
   const preferences = readSourceSelection(owner);
   if (source === 'yahoo') return preferences.yahoo && isPublicSourceApproved(owner, 'yahoo');
+  if (source === 'bullion') return preferences.bullion === true && isPublicSourceApproved(owner, 'bullion');
   if (source === 'eodhd') return true; // Licensed history remains readable after the optional key is removed.
   if (source === 'binance' || source === 'kraken') return preferences[source] && isPublicSourceApproved(owner, source);
   if (source === 'tiingo') return hasTiingoBrowserCredential(owner) && supportsTiingoBrowserAsset(symbol);
@@ -129,9 +131,15 @@ function contextFor(source: PersonalHistorySource, owner: string, symbol: string
       providerSymbol = target.providerSymbol; exchange = target.exchange; currency = target.listingCurrency;
     } catch { return null; }
   }
+  if (source === 'bullion') {
+    if (symbol !== 'GOLD' && symbol !== 'SILVER') return null;
+    providerSymbol = symbol === 'GOLD' ? 'XAU' : 'XAG';
+    exchange = 'INDICATIVE_DEALER'; currency = 'USD';
+  }
   if (currency !== 'USD' && currency !== 'EUR') return null;
   const key: HistoryCacheKey = { installation: installation(), owner, instrument: providerSymbol,
-    exchange, providerId: source === 'eodhd' ? 'eodhd_personal_daily' : 'yahoo_personal_daily',
+    exchange, providerId: source === 'eodhd' ? 'eodhd_personal_daily'
+      : source === 'bullion' ? 'standard_bullion_daily' : 'yahoo_personal_daily',
     currency, interval: '1d', adjustment: 'raw_unadjusted', version: 1 };
   return { source, owner, symbol, range, key, instrument,
     id: JSON.stringify([key.installation, owner, source, symbol, providerSymbol, currency, exchange]),
@@ -146,7 +154,7 @@ function rememberYahoo(id: string, record: MemoryHistoryRecord): void {
   }
 }
 
-function available(bars: DailyHistoryBar[]): HistoryRange | null {
+function available(bars: HistoryBar[]): HistoryRange | null {
   return bars.length ? { from: bars[0].date, to: bars[bars.length - 1].date } : null;
 }
 
@@ -200,7 +208,7 @@ function resultFrom(context: Context, record: MemoryHistoryRecord | null, fetche
     cacheStatus: stale ? 'hit_stale' : fetched ? 'miss' : 'hit_fresh', bars, adjustment: 'raw_unadjusted',
     ...(volumeAdjustment ? { volumeAdjustment } : {}), requestedRange: { ...context.range }, availableRange: span,
     ...(missingTradingDates.length ? { missingTradingDates } : {}),
-    coverageLimited: missingTradingDates.length > 0 || uncovered || Date.parse(span.from + 'T00:00:00Z') > Date.parse(context.range.from + 'T00:00:00Z') + 7 * DAY
+    coverageLimited: context.source === 'bullion' || missingTradingDates.length > 0 || uncovered || Date.parse(span.from + 'T00:00:00Z') > Date.parse(context.range.from + 'T00:00:00Z') + 7 * DAY
       || Date.parse(span.to + 'T00:00:00Z') < end - 7 * DAY,
     refreshFailed,
   };
@@ -216,15 +224,19 @@ function recordFailure(id: string, error: unknown): void {
 
 async function reusableHistory(context: Context, signal: AbortSignal): Promise<HybridDailySeries | null> {
   const repo = getHistoryRepository();
-  const durable = context.source === 'eodhd';
+  const durable = context.source === 'eodhd' || context.source === 'bullion';
   const epoch = durable ? await repo.getOwnerEpoch(context.key.installation, context.owner) : 0;
   assertLive(context, signal);
   let record: MemoryHistoryRecord | null = durable ? await repo.read(context.key) : yahooHistory.get(context.id) ?? null;
   assertLive(context, signal);
   const missing = planHistoryRanges(record, context.range, Date.now());
-  const connected = !durable || hasEodhd(context.owner);
-  const cutoff = durable && connected ? eodhdYearCutoff(Date.now(), readEodhdHistoryYears(context.owner)) : null;
-  const eligible = missing.flatMap(range => {
+  const connected = context.source !== 'eodhd' || hasEodhd(context.owner);
+  const cutoff = context.source === 'eodhd' && connected ? eodhdYearCutoff(Date.now(), readEodhdHistoryYears(context.owner)) : null;
+  // Standard Bullion's preset is the validated transport window. Cache that
+  // complete checked window once; other providers retain gap-only requests.
+  const transportRanges = context.source === 'bullion' && missing.length
+    ? [normalizePersonalHistoryRange({ range: '5y' })!] : missing;
+  const eligible = transportRanges.flatMap(range => {
     const from = cutoff && range.from < cutoff ? cutoff : range.from;
     return from > range.to ? [] : [{ from, to: range.to }];
   });
@@ -235,10 +247,11 @@ async function reusableHistory(context: Context, signal: AbortSignal): Promise<H
     if (!refreshFailed) for (const checked of eligible) {
       try {
         assertLive(context, signal);
-        const native = durable ? await loadEodhdHistory(context.owner, context.instrument, checked, signal)
-          : await loadYahooPersonalDailySeries(context.owner, context.symbol, signal, checked);
+        const native = context.source === 'bullion' ? await loadStandardBullionHistory(context.owner, context.symbol, checked, signal)
+          : context.source === 'eodhd' ? await loadEodhdHistory(context.owner, context.instrument, checked, signal)
+            : await loadYahooPersonalDailySeries(context.owner, context.symbol, signal, checked);
         assertLive(context, signal);
-        if (durable && (!('coverage' in native) || !sameRange(native.coverage.checked, checked))) {
+        if (context.source === 'eodhd' && (!('coverage' in native) || !sameRange(native.coverage.checked, checked))) {
           throw new Error('History checked coverage mismatch');
         }
         record = mergeNative(context, record, native, checked);
@@ -262,7 +275,7 @@ async function reusableHistory(context: Context, signal: AbortSignal): Promise<H
   }
   if (durable && await repo.getOwnerEpoch(context.key.installation, context.owner) !== epoch) throw abortError();
   assertLive(context, signal);
-  return resultFrom(context, record, fetched, refreshFailed, durable ? 'splits' : undefined);
+  return resultFrom(context, record, fetched, refreshFailed, context.source === 'eodhd' ? 'splits' : undefined);
 }
 
 async function legacyHistory(context: Context, signal: AbortSignal): Promise<HybridDailySeries | null> {
@@ -292,7 +305,7 @@ async function legacyHistory(context: Context, signal: AbortSignal): Promise<Hyb
 }
 
 async function perform(context: Context, signal: AbortSignal): Promise<HybridDailySeries | null> {
-  if (context.source !== 'yahoo' && context.source !== 'eodhd') return legacyHistory(context, signal);
+  if (context.source !== 'yahoo' && context.source !== 'eodhd' && context.source !== 'bullion') return legacyHistory(context, signal);
   const previous = listingLocks.get(context.id) ?? Promise.resolve();
   let release!: () => void;
   const held = new Promise<void>(resolve => { release = resolve; });

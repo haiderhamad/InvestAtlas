@@ -40,7 +40,7 @@ const isPublicExchange = (series: DailySeries): series is PublicExchangeSeries =
   series.providerId === 'binance_public_daily' || series.providerId === 'kraken_public_daily';
 const isPublicFeed = (series: DailySeries): boolean =>
   isPublicExchange(series) || series.providerId === 'twelve_demo_daily'
-  || series.providerId === 'yahoo_personal_daily';
+  || series.providerId === 'yahoo_personal_daily' || series.providerId === 'standard_bullion_daily';
 function providerLabel(series: DailySeries): string {
   if (series.providerId === 'binance_public_daily') return 'Binance (public BTC/EUR or ETH/EUR EOD)';
   if (series.providerId === 'kraken_public_daily') return 'Kraken (public BTC/USD or ETH/USD EOD)';
@@ -48,6 +48,7 @@ function providerLabel(series: DailySeries): string {
   if (series.providerId === 'marketdata_personal_daily') return 'Market Data API (personal US EOD)';
   if (series.providerId === 'yahoo_personal_daily') return 'Yahoo Finance (personal research EOD)';
   if (series.providerId === 'eodhd_personal_daily') return 'EODHD (personal daily history)';
+  if (series.providerId === 'standard_bullion_daily') return 'Standard Bullion (indicative daily closes)';
   return series.providerId === 'twelve_personal_daily' ? 'Twelve Data (personal EOD)' : 'Tiingo (personal EOD)';
 }
 const CURRENT_PATH = '/api/prices/current';
@@ -111,7 +112,9 @@ function providerProvenance(series: DailySeries): FieldProvenance {
     providerId: series.providerId,
     providerName: providerLabel(series),
     retrievedAt: series.retrievedAt,
-    method: isPublicExchange(series)
+    method: series.providerId === 'standard_bullion_daily'
+      ? 'indicative daily physical-metal close observations in USD per fine troy ounce; Data by Standard Bullion'
+      : isPublicExchange(series)
       ? `unadjusted, completed ${series.providerSymbol} daily exchange candle requested directly by the browser`
       : series.providerId === 'twelve_demo_daily'
         ? 'official provider sample data for AAPL charts only; not for portfolio valuation'
@@ -536,6 +539,8 @@ function quoteFromMidpoint(value: MarketDataMidpoint, currency: QuoteCurrency, f
 function eligible(source: MarketSource, owner: string, symbol: string, history: boolean,
   currency: QuoteCurrency, fxEnabled: boolean): boolean {
   const usdNeedsFx = currency === 'eur' && !fxEnabled;
+  if (source === 'bullion') return history && !usdNeedsFx && (symbol === 'GOLD' || symbol === 'SILVER')
+    && isPublicSourceApproved(owner, 'bullion');
   if (source === 'spot') return isPublicSourceApproved(owner, 'spot')
     && !history && !usdNeedsFx && ['GOLD', 'SILVER', 'BTC', 'ETH'].includes(symbol);
   if (source === 'coinpaprika') return isPublicSourceApproved(owner, 'coinpaprika')
@@ -868,7 +873,7 @@ async function handleHistory(url: URL, userId: string, signal?: AbortSignal): Pr
         low: bar.low,
         close: bar.close,
         volume: bar.volume,
-        dataQuality: 'ohlc',
+        dataQuality: bar.open === null ? 'close_only' : 'ohlc',
         priceQuality: 'observed',
         sourceRef,
       }];
@@ -879,12 +884,12 @@ async function handleHistory(url: URL, userId: string, signal?: AbortSignal): Pr
     if (!Number.isFinite(rate) || rate <= 0) return [];
     return [{
       date: bar.date,
-      open: bar.open * rate,
-      high: bar.high * rate,
-      low: bar.low * rate,
+      open: bar.open === null ? null : bar.open * rate,
+      high: bar.high === null ? null : bar.high * rate,
+      low: bar.low === null ? null : bar.low * rate,
       close: bar.close * rate,
       volume: bar.volume,
-      dataQuality: 'ohlc',
+      dataQuality: bar.open === null ? 'close_only' : 'ohlc',
       priceQuality: 'calculated',
       sourceRef,
       conversion: {
@@ -907,7 +912,9 @@ async function handleHistory(url: URL, userId: string, signal?: AbortSignal): Pr
   const stale = series.cacheStatus === 'hit_stale'
     || Date.parse(requestedRange.to) - latestAt > MAX_HISTORICAL_FX_CARRY_DAYS * DAY_MS;
   const warnings = [
-    series.providerId === 'twelve_demo_daily'
+    series.providerId === 'standard_bullion_daily'
+      ? 'Indicative physical-metal daily closes, not OHLC candles. Data by Standard Bullion; sparse dates remain unavailable.'
+      : series.providerId === 'twelve_demo_daily'
       ? 'Official provider demo sample: AAPL chart testing only; not for current portfolio valuation or redistribution.'
       : series.providerId === 'yahoo_personal_daily'
         ? 'Unofficial Yahoo Finance daily prices for permitted personal research only; no redistribution permission is implied.'

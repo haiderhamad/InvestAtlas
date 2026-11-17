@@ -4,12 +4,46 @@ Prepared 2026-11-14 from the local package lock and installed package files. Thi
 
 No node_modules, compiled build, platform binary, cached remote font, or remote crypto SVG is intended to be included in the source-only snapshot. For redistributing dependency code or binaries, re-evaluate the exact output/platform and preserve its actual notices and source obligations. Thirteen installed packages have declaration-only evidence in this collection; 96 optional platform package files were not installed.
 
-## Current lockfile update — release closure 2026-11-14
+## Next.js 16.4.6 dependency update, 2026-11-17
+
+The candidate lockfile updates twelve Next.js package entries from 16.4.3 to
+16.4.6. All twelve retain the MIT declaration in their package metadata. The
+lockfile SHA-256 for this update is `df346559303e391f95af34b0329442d031d82773991fe4a31accc247aa6ecb4e`.
+
+A macOS ARM64 installation of each version was compared by package-relative
+path and file hash for license, notice, copying and copyright files. Next.js
+replaced its bundled `jsonwebtoken` license file with the `fast-jwt` license
+shown below. All other compared files matched. Seven optional SWC packages
+were absent on this platform. The existing inventory below records the earlier
+collection and preserves its upstream notices.
+
+### fast-jwt (bundled with next@16.4.6)
+
+Source file `next/dist/compiled/fast-jwt/LICENSE`, SHA-256
+`9592377807fad09c3c1d7210d2e36db54c55e1e4cf2077497063c78e0b9a218b`. Full Apache-2.0 terms are in [LICENSE](LICENSE).
+
+```text
+Copyright 2020-2021 nearForm
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+## Historical lockfile update — release closure 2026-11-14
 
 The package inventory and collection counts further below describe the preserved
 original collection, not a claim that removed old versions remain installed.
 This update binds the changed package versions to their installed license texts;
-all earlier notices are retained. Final current lock SHA-256: `8beaf1db095cf7b34b32bd54a29951b31f3392f05dd5b9ec1aa5832857e0d628`.
+all earlier notices are retained. Lock SHA-256 for that update: `8beaf1db095cf7b34b32bd54a29951b31f3392f05dd5b9ec1aa5832857e0d628`.
 Sharp 0.35.5 is now explicitly declared as an icon development tool; its version
 and existing license text are unchanged. No unrelated runtime package version
 was updated. Platform/binary redistribution still requires its own output review.

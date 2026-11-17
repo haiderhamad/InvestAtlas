@@ -32,6 +32,8 @@ THIRD_PARTY_NOTICES; it is separate from the original app-icon generator above.
 Current README screenshots are actual browser captures with real provider
 observations, sources and timestamps, not historical posters or synthetic
 portfolio data. Their capture scope is recorded in [docs/media](docs/media/README.md).
+The paired mobile illustration frames two original, unaltered browser captures.
+Historical metals observations are credited to [Data by Standard Bullion](https://standardbullion.com/market-data).
 Market observations, third-party marks and externally rendered assets retain
 their respective terms; these screenshots supply no reusable market-data feed.
 

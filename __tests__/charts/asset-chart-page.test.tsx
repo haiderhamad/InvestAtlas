@@ -6,7 +6,8 @@ import { fetchFinancialData } from '@/lib/financial-data/client';
 import { availableField, createMoney, unavailableField } from '@/lib/financial-data/contracts';
 import type { CurrentPriceSnapshot } from '@/lib/financial-data/quotes/current-quote-service';
 
-jest.mock('@/components/layout/app-shell', () => ({ __esModule: true, default: ({ children }: { children: React.ReactNode }) => children }));
+let mockShellGate = false;
+jest.mock('@/components/layout/app-shell', () => ({ __esModule: true, default: ({ children }: { children: React.ReactNode }) => mockShellGate ? <p>Loading cloud workspace</p> : children }));
 jest.mock('@/lib/auth/auth-context', () => ({ useAuth: () => ({ user: { id: 'chart-test' } }) }));
 jest.mock('@/lib/firebase', () => ({ auth: null, db: null }));
 jest.mock('@/lib/financial-data/client', () => ({ fetchFinancialData: jest.fn() }));
@@ -92,6 +93,37 @@ it('labels history as a historical close when the separate quote is unavailable'
   expect(await screen.findByText('Last historical close')).toBeTruthy();
 });
 
+it('renders fine-gram prices and daily-observation labels for close-only metal history', async () => {
+  window.history.replaceState({}, '', '/charts?asset=GOLD');
+  jest.mocked(fetchFinancialData).mockImplementation(async input => {
+    if (String(input).startsWith('/api/prices/current?')) return { ok: true, json: async () => ({ prices: {} }) } as Response;
+    return { ok: true, json: async () => ({
+      prices: [
+        { date: '2026-11-13', close: 31.1035, open: null, high: null, low: null, volume: null, dataQuality: 'close_only' },
+        { date: '2026-11-14', close: 62.207, open: null, high: null, low: null, volume: null, dataQuality: 'close_only' },
+      ], status: 'partial', adjustment: 'raw_unadjusted',
+      sources: [{ kind: 'market', providerId: 'standard_bullion_daily', providerName: 'Standard Bullion (indicative daily closes)' }],
+    }) } as Response;
+  });
+  render(<ChartsPage />);
+  await waitFor(() => expect(observations()).toHaveLength(2));
+  // The plot intentionally projects close-only chart data; the API/cache tests
+  // separately verify that unavailable native OHLC remains null.
+  expect(observations().map((point: { close: number }) => point.close)).toEqual([1, 2]);
+  expect(screen.getAllByText(/Daily observations/).length).toBeGreaterThan(0);
+});
+
+it('does not promise a 24-hour maximum for an older saved metal history fallback', async () => {
+  window.history.replaceState({}, '', '/charts?asset=GOLD');
+  jest.mocked(fetchFinancialData).mockResolvedValue({ ok: true, json: async () => ({
+    prices: [{ date: '2026-01-01', close: 31.1035, open: null, high: null, low: null, volume: null, dataQuality: 'close_only' }],
+    status: 'partial', freshness: 'stale', cache: { status: 'hit_stale' }, adjustment: 'raw_unadjusted',
+  }) } as Response);
+  render(<ChartsPage />);
+  expect(await screen.findByText('Saved history is shown because refresh is unavailable. Check the last observation date.')).toBeTruthy();
+  expect(screen.queryByText(/up to 24 hours old/)).toBeNull();
+});
+
 it('does not download the current quote again when only the chart range changes', async () => {
   render(<ChartsPage />);
   await waitFor(() => expect(observations()).toHaveLength(250));
@@ -102,6 +134,7 @@ it('does not download the current quote again when only the chart range changes'
 });
 
 beforeEach(() => {
+  mockShellGate = false;
   window.localStorage.clear();
   window.history.replaceState({}, '', '/charts');
   jest.mocked(fetchFinancialData).mockReset();
@@ -113,6 +146,25 @@ beforeEach(() => {
   };
 });
 afterEach(cleanup);
+
+it('renders the measured chart when a cloud workspace gate mounts its surface later', async () => {
+  mockShellGate = true;
+  const page = render(<ChartsPage />);
+  expect(screen.queryByRole('group', { name: 'Price · Bitcoin' })).toBeNull();
+  await act(async () => {});
+
+  mockShellGate = false;
+  page.rerender(<ChartsPage />);
+  await waitFor(() => expect(observations()).toHaveLength(250));
+
+  // Reconnection can gate and remount the surface without remounting the page.
+  mockShellGate = true;
+  page.rerender(<ChartsPage />);
+  expect(screen.queryByLabelText('Chart observations')).toBeNull();
+  mockShellGate = false;
+  page.rerender(<ChartsPage />);
+  await waitFor(() => expect(observations()).toHaveLength(250));
+});
 
 it('keeps SMA calculation valid while the period draft is empty or fractional', async () => {
   render(<ChartsPage />);

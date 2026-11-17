@@ -44,7 +44,7 @@ const contentSecurityPolicy = [
       'https://api.tiingo.com',
       'https://api.gold-api.com',
       ...(['private_cloud', 'local_personal'].includes(process.env.NEXT_PUBLIC_INVESTATLAS_DEPLOYMENT_MODE ?? '')
-        ? ['https://api.twelvedata.com', 'https://api.coinpaprika.com', 'https://api.coingecko.com', 'https://api.marketdata.app', 'https://data-api.binance.vision', 'https://api.kraken.com'] : []),
+        ? ['https://api.twelvedata.com', 'https://api.coinpaprika.com', 'https://api.coingecko.com', 'https://api.marketdata.app', 'https://data-api.binance.vision', 'https://api.kraken.com', 'https://standardbullion.com'] : []),
       ...(localEmulatorQA ? ['http://127.0.0.1:9099', 'http://127.0.0.1:8080'] : []),
     ] : []),
   ].join(' '),

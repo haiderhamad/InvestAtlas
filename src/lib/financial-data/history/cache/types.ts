@@ -6,7 +6,21 @@ export interface DailyHistoryBar {
   close: number;
   volume: number | null;
   adjustedClose?: number;
+  dataQuality?: 'ohlc';
 }
+
+export interface CloseOnlyHistoryBar {
+  date: string;
+  close: number;
+  open: null;
+  high: null;
+  low: null;
+  volume: null;
+  dataQuality: 'close_only';
+  adjustedClose?: never;
+}
+
+export type HistoryBar = DailyHistoryBar | CloseOnlyHistoryBar;
 
 export interface HistoryCacheKey {
   installation: string;
@@ -27,7 +41,7 @@ export interface HistoryRange {
 
 export interface HistoryCacheRecord {
   key: HistoryCacheKey;
-  bars: DailyHistoryBar[];
+  bars: HistoryBar[];
   coverage: HistoryRange[];
   retrievedAt: number;
   lastCheckedAt: number;

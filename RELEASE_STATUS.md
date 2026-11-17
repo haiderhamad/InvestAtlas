@@ -1,4 +1,23 @@
-# Source release status — 2026-11-16
+# Source release status
+
+## Metals-history source release · 2026-11-17
+
+This update extends Gold and Silver charts with optional Standard Bullion daily closes. Local Personal and Private Cloud users can enable the provider, revisit cached history and see the age of a saved observation when refresh fails. The public demo keeps its own sample data. The update builds on public commit `7bcaeff`.
+
+| Local check | Observed result |
+| --- | --- |
+| Clean source installation | Node.js 24.22.3 on macOS ARM64, npm 11.19.1, locked dependencies installed with `npm ci` |
+| Application and launcher tests | 218 Jest suites, 1,899 tests and 12 launcher checks passed |
+| Static checks | TypeScript passed. ESLint reported 0 errors and 30 warnings. Translation coverage passed for 1,644 German and Arabic strings. All five app icons matched their provenance. |
+| Node production | Local Personal built and started. The home page, both metals chart routes, settings and the app manifest returned HTTP 200. Both chart responses included the provider origin in their content security policy. |
+| Docker Compose | Source build on Docker Desktop. The same five routes returned HTTP 200 before and after a restart. The container stopped with exit 0. It ran as `node`, bound to loopback, had zero host mounts, dropped all capabilities and enabled `no-new-privileges`. |
+| Dependencies | The production registry audit reported zero advisories. The full audit reported one High picomatch advisory across 49 development package entries. Next.js bundles picomatch 4.0.1. In the reviewed configuration the app controls the glob pattern used for image requests. See [security findings](SECURITY.md). |
+
+A public-demo production build and a private-cloud production build use the release source and the same verified lockfile installation. Private-cloud build checks use synthetic configuration. Screenshot sources and capture conditions are recorded in [README images](docs/media/README.md).
+
+The Nov 16 remote-clone checks below apply to the earlier publication.
+
+## Earlier source publication · 2026-11-16
 
 The complete **InvestAtlas v1.2.4** application source is published at
 [haiderhamad/InvestAtlas](https://github.com/haiderhamad/InvestAtlas).
@@ -8,7 +27,7 @@ This documentation refresh adds the existing app wordmark, a fuller feature
 reference and current real-price desktop/mobile captures. Application,
 dependency, build/configuration, icon and test bytes are unchanged.
 
-## Published scope
+### Published scope
 
 - All 286 application source files and 216 retained test files, plus the local
   launcher, source-built Docker configuration and self-hosting instructions.
@@ -21,7 +40,7 @@ dependency, build/configuration, icon and test bytes are unchanged.
   to earlier artwork. The current README uses new browser captures and an
   explicitly attributed reproduction of the existing app wordmark.
 
-## Independent recovery from GitHub
+### Independent recovery from GitHub
 
 After the authorized source push, two separate clean HTTPS clones were made
 from GitHub at the exact publication commit. Both matched all 546 distribution
@@ -46,7 +65,7 @@ The new images show real provider responses in an empty workspace, with exact
 sources, times, history limits and language/theme details in
 [docs/media](docs/media/README.md).
 
-## Known findings and limits
+### Findings and limits at that checkpoint
 
 - The 2026-11-16 registry audit found zero production advisories and one Low
   deepmerge/Jest development family across six affected entries. The maintainer
@@ -64,7 +83,7 @@ sources, times, history limits and language/theme details in
 - Installation acceptance is not universal ownership, licensing or financial
   accuracy clearance. Data feeds and third-party works keep their own terms.
 
-## Publication boundary
+### Earlier publication boundary
 
 The owner explicitly authorized the public source commit/push and repository
 description update. No history rewrite, private-repository push, registry image

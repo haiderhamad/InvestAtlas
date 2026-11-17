@@ -11,7 +11,7 @@ import {
 import { readSourceSelection, saveSourceSelection } from '@/lib/financial-data/providers/source-selection';
 import { publicMarketCopy } from './public-market-consent-copy';
 
-const OPTIONS: readonly PublicSourceId[] = ['yahoo', 'spot', 'coinpaprika', 'coingecko', 'binance', 'kraken'];
+const OPTIONS: readonly PublicSourceId[] = ['yahoo', 'spot', 'coinpaprika', 'coingecko', 'binance', 'kraken', 'bullion'];
 const RECOMMENDED: PublicSourceId[] = ['yahoo', 'spot', 'coinpaprika', 'coingecko', 'binance'];
 const TERMS: Record<PublicSourceId, string> = {
   yahoo: 'https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html',
@@ -20,6 +20,7 @@ const TERMS: Record<PublicSourceId, string> = {
   coingecko: 'https://www.coingecko.com/en/api_terms',
   binance: 'https://developers.binance.com/en/docs/products/spot/rest-api',
   kraken: 'https://www.kraken.com/legal',
+  bullion: 'https://standardbullion.com/market-data',
 };
 
 export function PublicMarketSessionConsent({ owner }: { owner: string }) {
@@ -50,6 +51,7 @@ export function PublicMarketSessionConsent({ owner }: { owner: string }) {
       coingecko: selected.includes('coingecko'),
       binance: selected.includes('binance'),
       kraken: selected.includes('kraken'),
+      bullion: selected.includes('bullion'),
     });
     setPublicSourceConsent(owner, selected);
     setActive(readPublicSourceConsent(owner));

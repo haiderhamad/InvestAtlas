@@ -21,5 +21,6 @@ export function PersonalPriceAttribution({ owner }: { owner: string | null }) {
   return <div className="financial-data-attribution" style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
     {sources.includes('coinpaprika') && <a href="https://coinpaprika.com/" target="_blank" rel="noreferrer">{t('Powered by CoinPaprika')}</a>}
     {sources.includes('coingecko') && <a href="https://www.coingecko.com/en/api" target="_blank" rel="noreferrer">{t('Powered by CoinGecko')}</a>}
+    {sources.includes('bullion') && <a href="https://standardbullion.com/market-data" target="_blank" rel="noreferrer">{t('Data by Standard Bullion')}</a>}
   </div>;
 }

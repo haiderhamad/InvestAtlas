@@ -14,13 +14,13 @@ beforeEach(() => { window.localStorage.clear(); window.sessionStorage.clear(); c
 afterEach(cleanup);
 
 test.each([
-  ['en', /gold and silver/i, /all 27/i, /Price coverage and backups/, /No verified independent free metal backup/],
-  ['de', /Gold und Silber/, /alle 27/, /Preisabdeckung und Ersatzquellen/, /Keine verifizierte unabhängige kostenlose Metall-Ersatzquelle/],
-  ['ar', /للذهب والفضة/, /27/, /تغطية الأسعار والمصادر البديلة/, /لا يوجد مصدر مجاني مستقل موثّق بديل للمعادن/],
+  ['en', /gold and silver/i, /all 27/i, /Price coverage and backups/, /Saved Standard Bullion history/],
+  ['de', /Gold und Silber/, /alle 27/, /Preisabdeckung und Ersatzquellen/, /Gespeicherte Standard-Bullion-Historie/],
+  ['ar', /للذهب والفضة/, /27/, /تغطية الأسعار والمصادر البديلة/, /سجل Standard Bullion المحفوظ/],
 ])('shows scope and real backup limits in %s without activating providers', (lang, metals, coins, title, limitation) => {
   language = String(lang);
   render(<PersonalMarketSources owner="coverage-owner" />);
-  expect(screen.getByRole('checkbox', { name: metals as RegExp })).toBeTruthy();
+  expect(screen.getAllByRole('checkbox', { name: metals as RegExp })).toHaveLength(2);
   expect(screen.getByRole('checkbox', { name: coins as RegExp })).toBeTruthy();
   expect(screen.getByText(title as RegExp)).toBeTruthy();
   expect(screen.getByText(limitation as RegExp)).toBeTruthy();
@@ -45,4 +45,18 @@ test('shows mandatory linked attribution for the actually approved aggregators a
   expect(screen.getByRole('link', { name: 'Powered by CoinGecko' }).getAttribute('href')).toBe('https://www.coingecko.com/en/api');
   cleanup(); clearPublicSourceConsent(); render(<PersonalPriceAttribution owner="coverage-owner" />);
   expect(screen.queryByRole('link')).toBeNull();
+});
+
+test('the metal-history source needs its own deliberate selection and has linked attribution', () => {
+  language = 'en'; setPublicSourceConsent('coverage-owner', ['spot']);
+  render(<PersonalMarketSources owner="coverage-owner" />);
+  const source = screen.getByRole('checkbox', { name: /Standard Bullion:/ });
+  expect((source as HTMLInputElement).checked).toBe(false);
+  expect(readPublicSourceConsent('coverage-owner')).not.toContain('bullion');
+  fireEvent.click(source);
+  fireEvent.click(screen.getByRole('checkbox', { name: /I will use the selected sources only/ }));
+  fireEvent.click(screen.getByRole('button', { name: /Update active sources/ }));
+  expect(readPublicSourceConsent('coverage-owner')).toEqual(['spot', 'bullion']);
+  cleanup(); render(<PersonalPriceAttribution owner="coverage-owner" />);
+  expect(screen.getByRole('link', { name: 'Data by Standard Bullion' }).getAttribute('href')).toBe('https://standardbullion.com/market-data');
 });

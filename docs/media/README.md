@@ -1,53 +1,31 @@
 # README images
 
-Current InvestAtlas v1.2.4 interface, captured on **2026-11-16** from source
-publication commit `078c838142f60abc3ea59646558a22597e257031`.
+The mobile charts were captured on November 17, 2026 in an empty Local Personal workspace running the metals-history update. The ETF and Bitcoin images were captured on November 16 from publication commit `078c838142f60abc3ea59646558a22597e257031`. All four individual screenshots show the running application with approved market sources and actual provider responses.
 
-## Actual market observations
+## Market observations
 
-All four PNG files are direct browser screenshots from an empty Local Personal
-workspace with explicitly approved public sources. No prices, candles, holdings
-or provider labels were injected or mocked. No personal portfolio or API keys
-were used. The screenshots include source/time and coverage states.
+| Original screenshot | Browser view | Price at capture | Provider observation (UTC) and historical coverage |
+| --- | --- | ---: | --- |
+| [Gold](gold-mobile-de.png) | German, dark, 430 × 932 | €112.87 / fine gram | Gold API XAU spot, Nov 17 at 19:03. The five-year view has 595 closes through Nov 15. |
+| [Silver](silver-mobile-ar.png) | Arabic/RTL, light, 430 × 932 | €1.3836 / fine gram | Gold API XAG spot, Nov 17 at 19:05. The five-year view has 595 closes through Nov 16. |
+| [ISWD ETF](etf-desktop.png) | English, dark, 1440px desktop | €60.30 | Yahoo IUSD.DE, Nov 16 at 11:37. The chart has 251 daily observations through Nov 13. |
+| [Bitcoin](bitcoin-desktop.png) | English, light, 1440px desktop | €58,362.11 | Gold API indicative USD spot, Nov 16 at 11:56. The chart has 99 Binance BTC/EUR daily observations through Nov 15. |
 
-| Image | View | Price visible at capture | Provider observation (UTC) |
-| --- | --- | --- | --- |
-| `etf-desktop.png` | English, dark, 1440px desktop | ISWD / IUSD.DE: EUR 60.30 | Yahoo, 2026-11-16 11:37; 251 daily observations through Nov 13 |
-| `bitcoin-desktop.png` | English, light, 1440px desktop | BTC: EUR 58,362.11 | Gold API indicative USD spot, 2026-11-16 11:56; Binance BTC/EUR daily history through Nov 15, 99 observations |
-| `gold-mobile-de.png` | German, dark, 390 × 1100px | Gold: EUR 112.84 per fine gram | Gold API indicative XAU spot, 2026-11-16 11:57 |
-| `silver-mobile-ar.png` | Arabic/RTL, light, 390 × 1100px | Silver: EUR 1.3875 per fine gram | Gold API indicative XAG spot, 2026-11-16 11:58 |
+The app converts metal spot observations to euros per fine gram using ECB reference rates. Each metal chart connects available historical closes from a separate source. Five-year coverage is partial. [Data by Standard Bullion](https://standardbullion.com/market-data).
 
-USD spot observations are displayed in EUR using the app's sourced FX conversion;
-metal units are converted to fine grams. Spot quotes and historical candles are
-separate inputs. The metal views honestly show unavailable history. Limited
-stock/crypto history and raw-series indicator restrictions remain visible.
-Screenshots record past observations; prices and available coverage change.
+## Refreshing the mobile images
+
+Start a local production instance using the [quick start](../../README.md#quick-start). Open an empty browser profile, review the provider terms and select Gold API, Standard Bullion and ECB conversion. Set the chart currency to EUR. In these captures Chrome used the iPhone 15 Pro Max device profile with a 430 × 932 CSS-pixel viewport.
+
+Open Gold in German dark mode and Silver in Arabic light mode. Select 5Y, wait for the current quote and historical chart to finish loading, and scroll until the spot price, observation time and curve are visible. Save the viewport at CSS-pixel resolution. Use the dates and coverage the application reports to update both tables and the illustration captions.
+
+The [paired mobile illustration](metals-iphone-pair.png) frames the two original PNGs using the [local HTML layout](metals-iphone-stage.html). To render it, open the layout at 1200 CSS pixels wide and capture the full page. The frames and captions are outside the screenshots.
 
 ## Wordmark and notices
 
-`investatlas-logo.svg` reproduces the existing app's Gem + InvestAtlas +
-Shariah-aware identity from `src/components/layout/sidebar.tsx`, using the
-project's blue/navy palette. Layout and text are project material under
-Apache-2.0. Gem path geometry comes from the existing `lucide-react@0.577.0`
-dependency under ISC. Its copyright and permission notice are embedded in the
-SVG; the complete dependency notices remain in
-[THIRD_PARTY_NOTICES](../../THIRD_PARTY_NOTICES.md).
-No font file, remote script or external image is embedded in the SVG.
+The InvestAtlas wordmark reproduces the existing Gem and text identity from `src/components/layout/sidebar.tsx`. Its layout and text are project material under Apache-2.0. The Gem geometry comes from Lucide and retains its ISC notice in the [SVG](investatlas-logo.svg) and [third-party notices](../../THIRD_PARTY_NOTICES.md).
 
-Screenshots depict the app with its normal third-party marks and rendered fonts.
-Those assets and market observations retain their terms as described in
-[LICENSING](../../LICENSING.md). The images do not grant feed redistribution or
-supply a continuously updated data service. Original historical posters are not
-reused in the current README.
-
-## Refreshing captures
-
-Start a clean local instance using the root README. Review the current provider
-terms, deliberately activate permitted sources and keep personal account data
-out of the screenshot profile. Open Charts for ISWD, BTC, Gold and Silver; use
-the visible theme/language controls. Wait for quote/history loading and chart
-animation to finish. Capture the real interface with source, unit, observation
-time and coverage labels intact. Update this table and hashes when recapturing.
+Market observations, third-party marks and rendered fonts retain their own terms. The source license and asset provenance are described in [Licensing](../../LICENSING.md).
 
 ## File integrity
 
@@ -55,6 +33,8 @@ time and coverage labels intact. Update this table and hashes when recapturing.
 | --- | --- |
 | `bitcoin-desktop.png` | `5629841ad5085bb7dfc1a63b993e405b7b58418e6d346bfb23d9ef872c88bfdb` |
 | `etf-desktop.png` | `55bbbc08c2fc2406eed050fdb8a40b030cb62ce3e010164e64f460505f240666` |
-| `gold-mobile-de.png` | `7f0b9b9cb74e199fb67ac491500aa3ee4ab7a198ad39bdc9951fceb384f44079` |
+| `gold-mobile-de.png` | `5454f1b29760e9a3c54e323a0b2836937f8e3a1a6fc44cddfdd484214629d2e4` |
 | `investatlas-logo.svg` | `5afd6a2432f09e704a243239e09b1d15c6cc9cd33b4d0eec514abe02bef340bd` |
-| `silver-mobile-ar.png` | `aa5dabe1045b84ecfc3c7c9c3071c5406de66480d5a6e826f12c1a594a51a80c` |
+| `metals-iphone-pair.png` | `3bb08efa41338f38315573a2a886136925a5a1122887d4dd6b0702f649fd7b90` |
+| `metals-iphone-stage.html` | `6cf13f78a854a67954fbf7a13cf871f0270d71aab120dd11e6f45242e6298102` |
+| `silver-mobile-ar.png` | `d5944e8ae5e08be1bb85fb66e1c8eb66c2efea9b10a8975ff52e1933d7d5c872` |

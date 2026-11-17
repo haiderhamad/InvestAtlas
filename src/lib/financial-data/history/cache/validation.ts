@@ -1,4 +1,4 @@
-import type { DailyHistoryBar, HistoryCacheKey, HistoryCacheRecord, HistoryRange } from './types';
+import type { HistoryBar, HistoryCacheKey, HistoryCacheRecord, HistoryRange } from './types';
 
 export const DAY_MS = 86_400_000;
 export const MAX_HISTORY_BARS = 5_000;
@@ -74,11 +74,18 @@ function positive(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0;
 }
 
-function normalizeBar(value: unknown, lastClosedDay: number): DailyHistoryBar | null {
+function normalizeBar(value: unknown, lastClosedDay: number): HistoryBar | null {
   const bar = object(value);
   if (!bar) return null;
   const day = dateDay(bar.date);
-  if (day === null || day > lastClosedDay || !positive(bar.open) || !positive(bar.high)
+  if (day === null || day > lastClosedDay || !positive(bar.close)) return null;
+  if (bar.dataQuality === 'close_only') {
+    if (bar.open !== null || bar.high !== null || bar.low !== null || bar.volume !== null
+      || bar.adjustedClose !== undefined) return null;
+    return { date: bar.date as string, close: bar.close, open: null, high: null, low: null,
+      volume: null, dataQuality: 'close_only' };
+  }
+  if ((bar.dataQuality !== undefined && bar.dataQuality !== 'ohlc') || !positive(bar.open) || !positive(bar.high)
     || !positive(bar.low) || !positive(bar.close) || bar.high < Math.max(bar.open, bar.close, bar.low)
     || bar.low > Math.min(bar.open, bar.close)
     || (bar.volume !== null && (typeof bar.volume !== 'number' || !Number.isFinite(bar.volume) || bar.volume < 0))
@@ -87,6 +94,7 @@ function normalizeBar(value: unknown, lastClosedDay: number): DailyHistoryBar | 
     date: bar.date as string, open: bar.open, high: bar.high, low: bar.low,
     close: bar.close, volume: bar.volume as number | null,
     ...(bar.adjustedClose === undefined ? {} : { adjustedClose: bar.adjustedClose as number }),
+    ...(bar.dataQuality === 'ohlc' ? { dataQuality: 'ohlc' as const } : {}),
   };
 }
 
@@ -100,7 +108,7 @@ export function normalizeHistoryRecord(value: unknown, now: number): HistoryCach
     || ![record.retrievedAt, record.lastCheckedAt].every(value =>
       typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 && value <= now)) return null;
   const lastClosedDay = closedUtcDay(now);
-  const bars: DailyHistoryBar[] = [];
+  const bars: HistoryBar[] = [];
   for (const value of record.bars) {
     const bar = normalizeBar(value, lastClosedDay);
     if (!bar || (bars.length > 0 && bars[bars.length - 1].date >= bar.date)) return null;
