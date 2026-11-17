@@ -1,8 +1,6 @@
-<p align="center">
-  <img src="docs/media/investatlas-logo.svg" width="340" height="84" alt="InvestAtlas — Shariah-aware">
-</p>
-
-<h1 align="center">InvestAtlas</h1>
+<h1 align="center">
+  <img src="docs/media/investatlas-logo.svg" width="260" alt="InvestAtlas">
+</h1>
 <p align="center"><strong>Your portfolio. Your data. Your own instance.</strong></p>
 <p align="center">A Shariah-aware investment workspace for stocks, ETFs, crypto, gold, silver and cash.<br>Run it locally with Node.js or Docker, or host your own private cloud.</p>
 

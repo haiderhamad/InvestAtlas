@@ -98,8 +98,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "f1c4f692a963dbbf77317c23d7b29636ac1b83a2f38f686aed330ecfb6515776",
-      "sourceSha256": "f1c4f692a963dbbf77317c23d7b29636ac1b83a2f38f686aed330ecfb6515776",
+      "sha256": "98e22821a3d26fb118d7a77c49a24d4989f6bc9de1b23f8543a91db50845055e",
+      "sourceSha256": "98e22821a3d26fb118d7a77c49a24d4989f6bc9de1b23f8543a91db50845055e",
       "operation": "documentation"
     },
     {
@@ -1454,8 +1454,8 @@
     },
     {
       "path": "docs/media/README.md",
-      "sha256": "52fcd9ccadfc480a44a37c7de6a43c9e5704fd100de5b25c4706391ecd18427c",
-      "sourceSha256": "52fcd9ccadfc480a44a37c7de6a43c9e5704fd100de5b25c4706391ecd18427c",
+      "sha256": "0e06b62b94ff1ed98d0a58a3d49bed13ec0b21be106dcc1e8692e2f8d2fc6c78",
+      "sourceSha256": "0e06b62b94ff1ed98d0a58a3d49bed13ec0b21be106dcc1e8692e2f8d2fc6c78",
       "operation": "documentation"
     },
     {
@@ -1478,20 +1478,20 @@
     },
     {
       "path": "docs/media/investatlas-logo.svg",
-      "sha256": "5afd6a2432f09e704a243239e09b1d15c6cc9cd33b4d0eec514abe02bef340bd",
-      "sourceSha256": "5afd6a2432f09e704a243239e09b1d15c6cc9cd33b4d0eec514abe02bef340bd",
+      "sha256": "00d6f11faeb5a49dee2e842177f8122d556456ca986aca624c98fe9824a1e85f",
+      "sourceSha256": "00d6f11faeb5a49dee2e842177f8122d556456ca986aca624c98fe9824a1e85f",
       "operation": "documentation"
     },
     {
       "path": "docs/media/metals-iphone-pair.png",
-      "sha256": "3bb08efa41338f38315573a2a886136925a5a1122887d4dd6b0702f649fd7b90",
-      "sourceSha256": "3bb08efa41338f38315573a2a886136925a5a1122887d4dd6b0702f649fd7b90",
+      "sha256": "9acc0b1856580e8fce38f7f424bb86bd2a1ede2fdb738fb6bc9d69b49087efad",
+      "sourceSha256": "9acc0b1856580e8fce38f7f424bb86bd2a1ede2fdb738fb6bc9d69b49087efad",
       "operation": "documentation"
     },
     {
       "path": "docs/media/metals-iphone-stage.html",
-      "sha256": "6cf13f78a854a67954fbf7a13cf871f0270d71aab120dd11e6f45242e6298102",
-      "sourceSha256": "6cf13f78a854a67954fbf7a13cf871f0270d71aab120dd11e6f45242e6298102",
+      "sha256": "0a4619b2e280d79ed227a331ea9170f6a8a4ff448d56fb77abad11f4ef3acf5d",
+      "sourceSha256": "0a4619b2e280d79ed227a331ea9170f6a8a4ff448d56fb77abad11f4ef3acf5d",
       "operation": "documentation"
     },
     {
