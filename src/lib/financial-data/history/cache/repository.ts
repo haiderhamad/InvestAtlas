@@ -19,6 +19,8 @@ export interface HistoryRepository {
   getOwnerEpoch(installation: string, owner: string): Promise<number>;
   read(key: HistoryCacheKey): Promise<HistoryCacheRecord | null>;
   write(record: HistoryCacheRecord, expectedOwnerEpoch?: number, signal?: AbortSignal): Promise<boolean>;
+  update(key: HistoryCacheKey, merge: (current: HistoryCacheRecord | null) => HistoryCacheRecord,
+    expectedOwnerEpoch: number, signal: AbortSignal): Promise<HistoryCacheRecord | null>;
   clearOwner(installation: string, owner: string): Promise<void>;
   stats(installation: string, owner: string): Promise<HistoryRepositoryStats>;
 }
@@ -186,27 +188,52 @@ class BrowserHistoryRepository implements HistoryRepository {
 
   async write(input: HistoryCacheRecord, expectedOwnerEpoch?: number, signal?: AbortSignal): Promise<boolean> {
     const record = normalizeHistoryRecord(input, Date.now());
-    if (signal?.aborted || !record || !retainRecord(record)
-      || (expectedOwnerEpoch !== undefined && (!Number.isSafeInteger(expectedOwnerEpoch) || expectedOwnerEpoch < 0))) return false;
-    const id = historyKeyId(record.key);
-    const ownerId = historyOwnerId(record.key.installation, record.key.owner);
+    if (!record || !retainRecord(record)) return false;
+    return Boolean(await this.store(record.key, () => record, expectedOwnerEpoch, signal));
+  }
+
+  async update(input: HistoryCacheKey, merge: (current: HistoryCacheRecord | null) => HistoryCacheRecord,
+    expectedOwnerEpoch: number, signal: AbortSignal): Promise<HistoryCacheRecord | null> {
+    const key = normalizeHistoryKey(input);
+    if (!key || !retainKey(key)) return null;
+    const id = historyKeyId(key);
+    const written = await this.store(key, stored => {
+      const current = normalizeHistoryRecord(stored, Date.now());
+      try {
+        const merged = merge(current && historyKeyId(current.key) === id && retainRecord(current) ? current : null);
+        const result = normalizeHistoryRecord(merged, Date.now());
+        return result && historyKeyId(result.key) === id && retainRecord(result) ? result : null;
+      } catch { return null; }
+    }, expectedOwnerEpoch, signal);
+    return normalizeHistoryRecord(written, Date.now());
+  }
+
+  /** Prepare the replacement from the record held by the same read/write transaction. */
+  private async store(key: HistoryCacheKey, prepare: (stored: unknown) => HistoryCacheRecord | null,
+    expectedOwnerEpoch?: number, signal?: AbortSignal): Promise<HistoryCacheRecord | null> {
+    if (signal?.aborted || (expectedOwnerEpoch !== undefined
+      && (!Number.isSafeInteger(expectedOwnerEpoch) || expectedOwnerEpoch < 0))) return null;
+    const id = historyKeyId(key);
+    const ownerId = historyOwnerId(key.installation, key.owner);
     const generation = this.generations.get(ownerId) ?? 0;
     const currentGeneration = () => !signal?.aborted && (this.generations.get(ownerId) ?? 0) === generation;
     const database = await this.database();
-    if (!currentGeneration()) return false;
+    if (!currentGeneration()) return null;
     if (database) {
       try {
-        const written = await transactionResult<boolean>(database, ['owners', 'records'], 'readwrite', (transaction, result, fail) => {
+        const written = await transactionResult<HistoryCacheRecord | null>(database, ['owners', 'records'], 'readwrite', (transaction, result, fail) => {
           requestResult(transaction.objectStore('owners').get(ownerId), value => {
             const epoch = epochOf(value);
             this.epochs.set(ownerId, epoch);
             if (!currentGeneration() || (expectedOwnerEpoch !== undefined && expectedOwnerEpoch !== epoch)) {
-              result(false);
+              result(null);
               return;
             }
             const records = transaction.objectStore('records');
             requestResult<StoredRecord[]>(records.getAll(), stored => {
-              if (!currentGeneration()) { result(false); return; }
+              if (!currentGeneration()) { result(null); return; }
+              const record = prepare(stored.find(entry => entry.id === id)?.record);
+              if (!record) { result(null); return; }
               const previous = stored.filter(entry => entry.id !== id)
                 .sort((a, b) => (a.record?.lastCheckedAt ?? 0) - (b.record?.lastCheckedAt ?? 0));
               for (const evicted of previous.slice(0, Math.max(0, previous.length - MAX_HISTORY_RECORDS + 1))) {
@@ -214,21 +241,24 @@ class BrowserHistoryRepository implements HistoryRepository {
                 this.memory.delete(evicted.id);
               }
               records.put({ id, ownerId, record } satisfies StoredRecord);
-              result(true);
+              result(record);
             }, fail);
           }, fail);
         }, signal);
-        if (!written || !currentGeneration()) return false;
-        this.remember(record);
-        return true;
+        if (!written || !currentGeneration()) return null;
+        this.remember(written);
+        return written;
       } catch {
-        if (signal?.aborted) return false;
+        if (signal?.aborted) return null;
         this.fallback('storage_error');
       }
     }
-    if (!currentGeneration() || (expectedOwnerEpoch !== undefined && expectedOwnerEpoch !== (this.epochs.get(ownerId) ?? 0))) return false;
+    if (!currentGeneration()
+      || (expectedOwnerEpoch !== undefined && expectedOwnerEpoch !== (this.epochs.get(ownerId) ?? 0))) return null;
+    const record = prepare(this.memory.get(id));
+    if (!record) return null;
     this.remember(record);
-    return true;
+    return record;
   }
 
   async clearOwner(installation: string, owner: string): Promise<void> {

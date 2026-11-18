@@ -182,9 +182,10 @@ raw equity history may be unsuitable for indicators because of corporate actions
 Standard Bullion history contains close observations, with unavailable OHLC and
 volume left empty. Its required [Data by Standard Bullion](https://standardbullion.com/market-data)
 credit accompanies the charts. The cached fallback is not a second independent feed.
-Its validated five-year preset is saved once and reused for shorter chart ranges;
-observations can be sparse, so this does not promise a full daily calendar.
-The app keeps partial/unavailable states visible.
+InvestAtlas combines the validated one-year and five-year presets by date.
+Where they overlap, the one-year observation takes precedence. The browser cache
+reuses saved observations when you switch chart ranges or reload. If a refresh
+fails, the chart labels the saved data and its date. Coverage can still be partial.
 
 For AI-assisted document import, connect your own **OpenAI, Gemini, Groq or
 OpenRouter** key. Local keys stay in tab memory; the cloud path uses authenticated,

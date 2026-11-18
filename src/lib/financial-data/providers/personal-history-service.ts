@@ -160,7 +160,30 @@ function available(bars: HistoryBar[]): HistoryRange | null {
 
 function sameRange(a: HistoryRange, b: HistoryRange): boolean { return a.from === b.from && a.to === b.to; }
 
-function mergeNative(context: Context, previous: MemoryHistoryRecord | null, native: NativeSeries, checked: HistoryRange): MemoryHistoryRecord {
+type BullionPreset = '5y' | '1y';
+type HistoryRequest = { preset: BullionPreset } | { checked: HistoryRange; preset?: undefined };
+
+function bullionRequests(record: HistoryCacheRecord | null, requested: HistoryRange, now: number): HistoryRequest[] {
+  // Keep legacy records usable through their normal refresh, including offline.
+  if (record && !record.bullionPresets && !planHistoryRanges(record, requested, now).length) return [];
+  const requests: HistoryRequest[] = [];
+  for (const preset of ['5y', '1y'] as const) {
+    const checked = normalizePersonalHistoryRange({ range: preset }, now)!;
+    const from = requested.from > checked.from ? requested.from : checked.from;
+    if (from > requested.to) continue;
+    const checkedAt = record?.bullionPresets?.[preset];
+    if (record && checkedAt !== undefined) {
+      const previousWindow = normalizePersonalHistoryRange({ range: preset }, checkedAt)!;
+      const previous = { key: record.key, bars: [], coverage: [previousWindow], retrievedAt: checkedAt, lastCheckedAt: checkedAt };
+      if (!planHistoryRanges(previous, { from, to: requested.to }, now).length) continue;
+    }
+    requests.push({ preset });
+  }
+  return requests;
+}
+
+function mergeNative(context: Context, previous: MemoryHistoryRecord | null, native: NativeSeries, checked: HistoryRange,
+  preset?: BullionPreset): MemoryHistoryRecord {
   if (native.assetSymbol !== context.symbol || native.providerId !== context.key.providerId
     || native.providerSymbol !== context.key.instrument || native.listingCurrency !== context.key.currency
     || typeof native.exchange !== 'string' || !native.exchange
@@ -172,9 +195,26 @@ function mergeNative(context: Context, previous: MemoryHistoryRecord | null, nat
     throw new Error('Invalid history retrieval timestamp');
   }
   const now = Date.now();
+  let bars = native.bars;
+  let bullionPresets: HistoryCacheRecord['bullionPresets'];
+  if (preset) {
+    const annual = new Set(previous?.bullionPresets?.annualDates);
+    const previousCheck = previous?.bullionPresets?.[preset] ?? 0;
+    const olderResponse = retrievedAt < previousCheck;
+    if (preset === '1y') {
+      if (olderResponse) bars = bars.filter(bar => !annual.has(bar.date));
+      for (const bar of bars) annual.add(bar.date);
+    } else {
+      // A late five-year response may fill gaps, but must preserve newer corrections and annual observations.
+      const protectedDates = olderResponse ? new Set(previous?.bars.map(bar => bar.date)) : annual;
+      bars = bars.filter(bar => !protectedDates.has(bar.date));
+    }
+    bullionPresets = { ...previous?.bullionPresets, [preset]: Math.max(previousCheck, retrievedAt), annualDates: [...annual].sort() };
+  }
   const merged = mergeHistoryRecord(previous, {
-    key: { ...context.key, exchange: native.exchange }, bars: native.bars, coverage: [], retrievedAt, lastCheckedAt: now,
+    key: { ...context.key, exchange: native.exchange }, bars, coverage: [], retrievedAt, lastCheckedAt: now,
   }, checked, now);
+  if (bullionPresets) return { ...merged, bullionPresets };
   if (context.source !== 'yahoo') return merged;
   const observedDates = new Set(native.bars.map(bar => bar.date));
   const missingTradingDates = [...new Set([
@@ -229,47 +269,61 @@ async function reusableHistory(context: Context, signal: AbortSignal): Promise<H
   assertLive(context, signal);
   let record: MemoryHistoryRecord | null = durable ? await repo.read(context.key) : yahooHistory.get(context.id) ?? null;
   assertLive(context, signal);
-  const missing = planHistoryRanges(record, context.range, Date.now());
   const connected = context.source !== 'eodhd' || hasEodhd(context.owner);
   const cutoff = context.source === 'eodhd' && connected ? eodhdYearCutoff(Date.now(), readEodhdHistoryYears(context.owner)) : null;
-  // Standard Bullion's preset is the validated transport window. Cache that
-  // complete checked window once; other providers retain gap-only requests.
-  const transportRanges = context.source === 'bullion' && missing.length
-    ? [normalizePersonalHistoryRange({ range: '5y' })!] : missing;
-  const eligible = transportRanges.flatMap(range => {
-    const from = cutoff && range.from < cutoff ? cutoff : range.from;
-    return from > range.to ? [] : [{ from, to: range.to }];
-  });
+  const eligible: HistoryRequest[] = context.source === 'bullion' ? bullionRequests(record, context.range, Date.now())
+    : planHistoryRanges(record, context.range, Date.now()).flatMap(range => {
+      const from = cutoff && range.from < cutoff ? cutoff : range.from;
+      return from > range.to ? [] : [{ checked: { from, to: range.to } }];
+    });
   let fetched = false;
   let refreshFailed = false;
   if (connected && eligible.length) {
-    refreshFailed = (failures.get(context.id) ?? 0) > Date.now();
-    if (!refreshFailed) for (const checked of eligible) {
+    for (const request of eligible) {
+      const { preset } = request;
+      const failureId = preset ? `${context.id}:${preset}` : context.id;
+      if ((failures.get(failureId) ?? 0) > Date.now()) {
+        refreshFailed = true;
+        continue;
+      }
       try {
         assertLive(context, signal);
-        const native = context.source === 'bullion' ? await loadStandardBullionHistory(context.owner, context.symbol, checked, signal)
+        // Each preset uses its own request time for validation and saved coverage across UTC midnight.
+        const startedAt = Date.now();
+        const checked = request.preset ? normalizePersonalHistoryRange({ range: request.preset }, startedAt)! : request.checked;
+        const native = preset ? await loadStandardBullionHistory(context.owner, context.symbol, checked, signal, startedAt)
           : context.source === 'eodhd' ? await loadEodhdHistory(context.owner, context.instrument, checked, signal)
             : await loadYahooPersonalDailySeries(context.owner, context.symbol, signal, checked);
         assertLive(context, signal);
         if (context.source === 'eodhd' && (!('coverage' in native) || !sameRange(native.coverage.checked, checked))) {
           throw new Error('History checked coverage mismatch');
         }
-        record = mergeNative(context, record, native, checked);
-        if (durable) {
-          const written = await repo.write(record, epoch, signal);
+        if (preset) {
+          const updated = await repo.update(context.key, current => mergeNative(context, current, native, checked, preset), epoch, signal);
           assertLive(context, signal);
-          if (!written && await repo.getOwnerEpoch(context.key.installation, context.owner) !== epoch) throw abortError();
-        } else rememberYahoo(context.id, record);
+          if (!updated) {
+            if (await repo.getOwnerEpoch(context.key.installation, context.owner) !== epoch) throw abortError();
+            throw new Error('Unable to merge bullion observations');
+          }
+          record = updated;
+        } else {
+          record = mergeNative(context, record, native, checked);
+          if (durable) {
+            const written = await repo.write(record, epoch, signal);
+            assertLive(context, signal);
+            if (!written && await repo.getOwnerEpoch(context.key.installation, context.owner) !== epoch) throw abortError();
+          } else rememberYahoo(context.id, record);
+        }
         assertLive(context, signal);
         fetched = true;
-        failures.delete(context.id);
+        failures.delete(failureId);
         emit();
       } catch (error) {
         assertLive(context, signal);
         if (error instanceof DOMException && error.name === 'AbortError') throw error;
-        recordFailure(context.id, error);
+        recordFailure(failureId, error);
         refreshFailed = true;
-        break;
+        if (!preset) break;
       }
     }
   }

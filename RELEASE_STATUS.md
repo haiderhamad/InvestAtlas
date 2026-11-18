@@ -1,5 +1,17 @@
 # Source release status
 
+## Combined Standard Bullion source release · 2026-11-18
+
+Gold and silver charts combine validated one-year and five-year daily closes. The one-year close takes precedence on overlapping dates. Successful responses are cached separately by preset, so a failed refresh preserves previously validated history. The candidate builds on public commit `50cee61`.
+
+| Check | Observed result |
+| --- | --- |
+| Clean install and tests | Lockfile installation with Node.js 24.22.3. 218 Jest suites, 1,908 tests and 12 launcher tests passed. |
+| History and browser cache | Covered overlapping closes, partial failures, source revocation and the UTC day boundary. A real browser IndexedDB test used two concurrent connections and a third to read the saved result. An outdated write was rejected after clearing the cache from another connection. |
+| Builds and HTTP | Local Personal, Public Demo and Private Cloud built. The Private Cloud build used synthetic configuration. Five Local Personal routes, including both metal charts, returned HTTP 200. The Demo smoke checked five pages and 12 denied API requests. |
+| Static checks | TypeScript, translation coverage and icon checks passed. ESLint reported 0 errors and 30 existing warnings. |
+| Dependency review | The production npm audit reported zero advisories in the installed dependency graph. The full audit recorded the existing High picomatch advisory through 50 reported development package entries. See the bundled-copy assessment in [Security](SECURITY.md). |
+
 ## Metals-history source release · 2026-11-17
 
 This update extends Gold and Silver charts with optional Standard Bullion daily closes. Local Personal and Private Cloud users can enable the provider, revisit cached history and see the age of a saved observation when refresh fails. The public demo keeps its own sample data. The update builds on public commit `7bcaeff`.

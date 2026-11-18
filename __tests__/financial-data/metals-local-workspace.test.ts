@@ -24,11 +24,11 @@ function storage() {
 }
 
 // Synthetic contract fixture for tests only; README captures use actual APIs.
-function observationFixture(metal = 'XAU') {
+function observationFixture(metal = 'XAU', preset = '5y') {
   return { source: 'Standard Bullion', url: 'https://standardbullion.com',
     attribution: 'Data by Standard Bullion — https://standardbullion.com', metal,
-    unit: 'USD per troy ounce', range: '5y', grain: 'daily', points: [
-      { t: '2022-11-16T00:00:00Z', price: 80 },
+    unit: 'USD per troy ounce', range: preset, grain: 'daily', points: [
+      ...(preset === '5y' ? [{ t: '2022-11-16T00:00:00Z', price: 80 }] : []),
       { t: '2026-11-15T00:00:00Z', price: 100 },
       { t: '2026-11-16T00:00:00Z', price: 120 },
     ] };
@@ -65,7 +65,7 @@ beforeEach(() => {
   transport = jest.fn(async input => {
     const url = new URL(String(input));
     if (url.origin !== 'https://standardbullion.com') throw new Error('Unexpected authenticated or server transport');
-    return Response.json(observationFixture(url.searchParams.get('metal') ?? 'XAU'));
+    return Response.json(observationFixture(url.searchParams.get('metal')!, url.searchParams.get('range')!));
   });
   global.fetch = transport;
 });
@@ -100,7 +100,7 @@ test('the local client reuses five-year observations and returns dated saved dat
   enable();
   expect((await history()).prices).toHaveLength(2);
   expect((await history('GOLD', '5y')).prices).toHaveLength(3);
-  expect(transport).toHaveBeenCalledTimes(1);
+  expect(transport).toHaveBeenCalledTimes(2);
   expect(await cache.getHistoryRepository().stats(`${window.location.origin}:local_personal`, owner)).toMatchObject({ recordCount: 1, barCount: 3 });
   expect(await cache.getHistoryRepository().stats(`${window.location.origin}:private_cloud`, owner)).toMatchObject({ recordCount: 0 });
   clock += 7 * 3_600_000;

@@ -45,4 +45,6 @@ export interface HistoryCacheRecord {
   coverage: HistoryRange[];
   retrievedAt: number;
   lastCheckedAt: number;
+  /** Successful preset checks and dates where the denser annual close takes precedence. */
+  bullionPresets?: { '5y'?: number; '1y'?: number; annualDates: string[] };
 }

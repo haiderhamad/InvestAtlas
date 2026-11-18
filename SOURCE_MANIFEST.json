@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
-  "preparedOn": "2026-11-17",
+  "preparedOn": "2026-11-18",
   "product": "InvestAtlas",
   "version": "1.2.4",
   "status": "SOURCE_RELEASE",
   "publicationDecision": "OWNER_AUTHORIZED_PUBLIC_COMMIT_AND_PUSH",
   "publicRepository": "https://github.com/haiderhamad/InvestAtlas",
-  "precedingPublicCommit": "7bcaeff3814902335fcb817109a874d0390ab189",
+  "precedingPublicCommit": "50cee6112f40f2a330bb86559740949942aaf69a",
   "historicalApplicationPublicationCommit": "078c838142f60abc3ea59646558a22597e257031",
   "modes": [
     "local_personal",
@@ -98,14 +98,14 @@
     },
     {
       "path": "README.md",
-      "sha256": "98e22821a3d26fb118d7a77c49a24d4989f6bc9de1b23f8543a91db50845055e",
-      "sourceSha256": "98e22821a3d26fb118d7a77c49a24d4989f6bc9de1b23f8543a91db50845055e",
+      "sha256": "35ff8beeb753933d7dc707e1f256b6a5f0800c6b7291935c9f7ceda1039210d1",
+      "sourceSha256": "35ff8beeb753933d7dc707e1f256b6a5f0800c6b7291935c9f7ceda1039210d1",
       "operation": "documentation"
     },
     {
       "path": "RELEASE_STATUS.md",
-      "sha256": "2899798092c3fcb17670ff1193de670ed53ee3e2f790e0efb31ae4ee54673451",
-      "sourceSha256": "2899798092c3fcb17670ff1193de670ed53ee3e2f790e0efb31ae4ee54673451",
+      "sha256": "1d54be523802441cbd8a28ecb51ed9378e194b44f47a924f98962e64e48a0e84",
+      "sourceSha256": "1d54be523802441cbd8a28ecb51ed9378e194b44f47a924f98962e64e48a0e84",
       "operation": "documentation"
     },
     {
@@ -692,14 +692,14 @@
     },
     {
       "path": "__tests__/financial-data/metals-history-integration.test.ts",
-      "sha256": "6d9462b5c02ea5174a43fced12a5377392157f7a7bad419e58482fefa6607471",
-      "sourceSha256": "6d9462b5c02ea5174a43fced12a5377392157f7a7bad419e58482fefa6607471",
+      "sha256": "c0a4a302c61d6d22ad5a009c10b78373cb224123f6ee652bc77b5c089af9d955",
+      "sourceSha256": "c0a4a302c61d6d22ad5a009c10b78373cb224123f6ee652bc77b5c089af9d955",
       "operation": "test"
     },
     {
       "path": "__tests__/financial-data/metals-local-workspace.test.ts",
-      "sha256": "401374f7c3f801d6dea7578cb618629b0b273ae2d460e19aa2351e5e201194ab",
-      "sourceSha256": "401374f7c3f801d6dea7578cb618629b0b273ae2d460e19aa2351e5e201194ab",
+      "sha256": "309231f8d3c938e7c1baa8c272acba73f329c0697e73b18254dfc43e94417e02",
+      "sourceSha256": "309231f8d3c938e7c1baa8c272acba73f329c0697e73b18254dfc43e94417e02",
       "operation": "test"
     },
     {
@@ -1442,8 +1442,8 @@
     },
     {
       "path": "docs/SELF_HOSTING.md",
-      "sha256": "34de1cfcce4524044c8f94ced46b72378e8c7e478f1c156f7afb03d8117055aa",
-      "sourceSha256": "34de1cfcce4524044c8f94ced46b72378e8c7e478f1c156f7afb03d8117055aa",
+      "sha256": "48f85a0c19d061736c6d56d8b641e2384f7e72dd71e58e5e03f4801ad0ec5d53",
+      "sourceSha256": "48f85a0c19d061736c6d56d8b641e2384f7e72dd71e58e5e03f4801ad0ec5d53",
       "operation": "documentation"
     },
     {
@@ -2708,20 +2708,20 @@
     },
     {
       "path": "src/lib/financial-data/history/cache/repository.ts",
-      "sha256": "976ebcd001ce029092a7f3eeae7cb4ef1ae2da8d37d68d95923e8206a83fe503",
-      "sourceSha256": "976ebcd001ce029092a7f3eeae7cb4ef1ae2da8d37d68d95923e8206a83fe503",
+      "sha256": "6551a08803866485db0f7c68d1908682f21ac3469e55df5fe70b9513f42bc4a5",
+      "sourceSha256": "6551a08803866485db0f7c68d1908682f21ac3469e55df5fe70b9513f42bc4a5",
       "operation": "application"
     },
     {
       "path": "src/lib/financial-data/history/cache/types.ts",
-      "sha256": "567714c0f3a35cfd9b5faa6057521818a86b50370975fc51b3ef6645cb9ec356",
-      "sourceSha256": "567714c0f3a35cfd9b5faa6057521818a86b50370975fc51b3ef6645cb9ec356",
+      "sha256": "5ba6fe37ba4efc3be71b15d29a48f2ba50699d760b3f755f0cb54acebcc9c8d0",
+      "sourceSha256": "5ba6fe37ba4efc3be71b15d29a48f2ba50699d760b3f755f0cb54acebcc9c8d0",
       "operation": "application"
     },
     {
       "path": "src/lib/financial-data/history/cache/validation.ts",
-      "sha256": "b1a31f13a7c1be2f622b8f18f31278f1f6872c6426ab721f609cac8932b21802",
-      "sourceSha256": "b1a31f13a7c1be2f622b8f18f31278f1f6872c6426ab721f609cac8932b21802",
+      "sha256": "3dfaf42da5c54ea1b06a4d33be566ec08e4c18894847b3f260482aed1d9330ab",
+      "sourceSha256": "3dfaf42da5c54ea1b06a4d33be566ec08e4c18894847b3f260482aed1d9330ab",
       "operation": "application"
     },
     {
@@ -2810,8 +2810,8 @@
     },
     {
       "path": "src/lib/financial-data/providers/personal-history-service.ts",
-      "sha256": "8dc9f49f640f184a26734eea87ac0dd554a31413e8f3231fedbf063e998037b4",
-      "sourceSha256": "8dc9f49f640f184a26734eea87ac0dd554a31413e8f3231fedbf063e998037b4",
+      "sha256": "d84f6c18ad2a117c3e0c8b033709bd82cc890d25710e38606d28325f7e008cc0",
+      "sourceSha256": "d84f6c18ad2a117c3e0c8b033709bd82cc890d25710e38606d28325f7e008cc0",
       "operation": "application"
     },
     {
@@ -2870,8 +2870,8 @@
     },
     {
       "path": "src/lib/financial-data/providers/standard-bullion-history.ts",
-      "sha256": "d466cd8ab842ffa7342aae72c590e259f3840ac30548d1b7a4d93969b4e6aa2e",
-      "sourceSha256": "d466cd8ab842ffa7342aae72c590e259f3840ac30548d1b7a4d93969b4e6aa2e",
+      "sha256": "42e6a0722904097bf56315544e5b7c0ff0090a40ae9429f6e0091a48fb42e23e",
+      "sourceSha256": "42e6a0722904097bf56315544e5b7c0ff0090a40ae9429f6e0091a48fb42e23e",
       "operation": "application"
     },
     {

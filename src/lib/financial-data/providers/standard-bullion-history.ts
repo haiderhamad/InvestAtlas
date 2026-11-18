@@ -27,18 +27,25 @@ export interface StandardBullionDailySeries {
 
 function metal(value: string): value is Metal { return value === 'GOLD' || value === 'SILVER'; }
 
+function requestedPreset(requested: HistoryRange, now: number): '5y' | '1y' | null {
+  for (const preset of ['5y', '1y'] as const) {
+    const canonical = normalizePersonalHistoryRange({ range: preset }, now)!;
+    if (requested?.from === canonical.from && requested.to === canonical.to) return preset;
+  }
+  return null;
+}
+
 /** Only genuine, completed daily close observations; never manufacture OHLC. */
 export function normalizeStandardBullionHistory(
   symbol: string, requested: HistoryRange, payload: unknown, now = Date.now(),
 ): StandardBullionDailySeries | null {
-  const range = normalizePersonalHistoryRange(requested, now);
-  const preset = normalizePersonalHistoryRange({ range: '5y' }, now)!;
-  if (!metal(symbol) || !range || range.from !== preset.from || range.to !== preset.to
+  const preset = requestedPreset(requested, now);
+  if (!metal(symbol) || !preset
     || !payload || typeof payload !== 'object' || Array.isArray(payload)) return null;
   const row = payload as Record<string, unknown>;
   if (row.source !== 'Standard Bullion' || row.url !== 'https://standardbullion.com'
     || row.metal !== METALS[symbol] || row.unit !== 'USD per troy ounce' || row.grain !== 'daily'
-    || row.range !== '5y'
+    || row.range !== preset
     || row.attribution !== 'Data by Standard Bullion — https://standardbullion.com'
     || !Array.isArray(row.points) || row.points.length === 0 || row.points.length > 2_200) return null;
   const bars: CloseOnlyHistoryBar[] = [];
@@ -52,7 +59,7 @@ export function normalizeStandardBullionHistory(
     const date = point.t.slice(0, 10);
     if (!Number.isSafeInteger(timestamp) || timestamp >= today
       || new Date(timestamp).toISOString() !== date + 'T00:00:00.000Z'
-      || date < range.from || date > range.to || (bars.length && date <= bars[bars.length - 1].date)) return null;
+      || date < requested.from || date > requested.to || (bars.length && date <= bars[bars.length - 1].date)) return null;
     bars.push({ date, close: point.price, open: null, high: null, low: null, volume: null, dataQuality: 'close_only' });
   }
   return { providerId: 'standard_bullion_daily', assetSymbol: symbol, providerSymbol: METALS[symbol],
@@ -76,18 +83,15 @@ class MetalHistoryUnavailableError extends Error {
 }
 
 export async function loadStandardBullionHistory(
-  owner: string, symbol: string, requested: HistoryRange, signal?: AbortSignal,
+  owner: string, symbol: string, requested: HistoryRange, signal?: AbortSignal, started = Date.now(),
 ): Promise<StandardBullionDailySeries> {
   const revision = getPublicSourceConsentRevision();
   assertActive(owner, revision, signal);
-  const range = normalizePersonalHistoryRange(requested);
-  const preset = normalizePersonalHistoryRange({ range: '5y' })!;
-  if (!metal(symbol) || !range || range.from !== preset.from || range.to !== preset.to) throw new Error('Unsupported physical metal history');
+  const preset = requestedPreset(requested, started);
+  if (!metal(symbol) || !preset) throw new Error('Unsupported physical metal history');
   if (retryUntil > Date.now()) throw new MetalHistoryUnavailableError(retryUntil);
-  // The documented explicit-date path returned observations outside its echoed
-  // window in live checks. The preset is independently validated against the
-  // completed five-year window; never accept or clip the malformed reply.
-  const query = new URLSearchParams({ metal: METALS[symbol], range: '5y' });
+  // Explicit-date responses can contain observations outside their echoed window.
+  const query = new URLSearchParams({ metal: METALS[symbol], range: preset });
   const requestSignal = providerRequestSignal(signal, 10_000);
   const response = await fetch(`${ENDPOINT}?${query}`, {
     method: 'GET', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer',
@@ -99,10 +103,13 @@ export async function loadStandardBullionHistory(
     const after = response.headers.get('retry-after');
     const requestedUntil = after && /^\d+$/.test(after) ? Date.now() + Number(after) * 1000
       : after ? Date.parse(after) : NaN;
-    retryUntil = Math.max(retryUntil, Date.now() + COOLDOWN_MS,
+    const until = Math.max(Date.now() + COOLDOWN_MS,
       Number.isFinite(requestedUntil) ? requestedUntil : 0,
       response.status === 403 ? Date.now() + 15 * 60_000 : 0);
-    throw new MetalHistoryUnavailableError(retryUntil);
+    if (response.status === 429 || response.status === 403 || Number.isFinite(requestedUntil)) {
+      retryUntil = Math.max(retryUntil, until);
+    }
+    throw new MetalHistoryUnavailableError(until);
   }
   if (!response.headers.get('content-type')?.toLowerCase().startsWith('application/json')) {
     try { void response.body?.cancel().catch(() => undefined); } catch { /* Already closed. */ }
@@ -110,7 +117,7 @@ export async function loadStandardBullionHistory(
   }
   const payload = await readBoundedResponseJson(response, 768 * 1024);
   assertActive(owner, revision, signal);
-  const result = normalizeStandardBullionHistory(symbol, range, payload);
+  const result = normalizeStandardBullionHistory(symbol, requested, payload, started);
   if (!result) throw new Error('Invalid physical metal history');
   return result;
 }

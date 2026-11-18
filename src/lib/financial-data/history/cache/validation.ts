@@ -120,9 +120,29 @@ export function normalizeHistoryRecord(value: unknown, now: number): HistoryCach
     if (!range || dateDay(range.to)! > lastClosedDay) return null;
     coverage.push(range);
   }
+  let bullionPresets: HistoryCacheRecord['bullionPresets'];
+  if (record.bullionPresets !== undefined) {
+    const presets = object(record.bullionPresets);
+    if (key.providerId !== 'standard_bullion_daily' || !presets
+      || !Array.isArray(presets.annualDates) || presets.annualDates.length > bars.length) return null;
+    const dates = new Set(bars.map(bar => bar.date));
+    const annualDates: string[] = [];
+    for (const date of presets.annualDates) {
+      if (typeof date !== 'string' || !dates.has(date) || (annualDates.length && date <= annualDates[annualDates.length - 1])) return null;
+      annualDates.push(date);
+    }
+    bullionPresets = { annualDates };
+    for (const preset of ['5y', '1y'] as const) {
+      const checked = presets[preset];
+      if (checked === undefined) continue;
+      if (typeof checked !== 'number' || !Number.isSafeInteger(checked) || checked < DAY_MS || checked > (record.lastCheckedAt as number)) return null;
+      bullionPresets[preset] = checked;
+    }
+  }
   return {
     key, bars, coverage, retrievedAt: record.retrievedAt as number,
     lastCheckedAt: record.lastCheckedAt as number,
+    ...(bullionPresets && { bullionPresets }),
   };
 }
 
