@@ -110,8 +110,8 @@
     },
     {
       "path": "SECURITY.md",
-      "sha256": "93a4459e005f222abc802c573397c08161de66544ebf9be9aec32963b5361602",
-      "sourceSha256": "93a4459e005f222abc802c573397c08161de66544ebf9be9aec32963b5361602",
+      "sha256": "77dea71717eb29d661ee25712141961f22678109d379f222a918a8f04045c515",
+      "sourceSha256": "77dea71717eb29d661ee25712141961f22678109d379f222a918a8f04045c515",
       "operation": "documentation"
     },
     {
