@@ -25,7 +25,7 @@ This update extends Gold and Silver charts with optional Standard Bullion daily 
 | Docker Compose | Source build on Docker Desktop. The same five routes returned HTTP 200 before and after a restart. The container stopped with exit 0. It ran as `node`, bound to loopback, had zero host mounts, dropped all capabilities and enabled `no-new-privileges`. |
 | Dependencies | The production registry audit reported zero advisories. The full audit reported one High picomatch advisory across 49 development package entries. Next.js bundles picomatch 4.0.1. In the reviewed configuration the app controls the glob pattern used for image requests. See [security findings](SECURITY.md). |
 
-A public-demo production build and a private-cloud production build use the release source and the same verified lockfile installation. Private-cloud build checks use synthetic configuration. Screenshot sources and capture conditions are recorded in [README images](docs/media/README.md).
+A public-demo production build and a private-cloud production build use the release source and the same verified lockfile installation. Private-cloud build checks use synthetic configuration. Sources and credits for the current illustrations are recorded in [README images](docs/media/README.md).
 
 The Nov 16 remote-clone checks below apply to the earlier publication.
 
@@ -73,9 +73,8 @@ an older checkout.
 These checks concern the application published in 078c838. This later
 README/assets/status refresh does not change runtime inputs; it receives scoped
 link, image, manifest and factual review instead of claiming another full build.
-The new images show real provider responses in an empty workspace, with exact
-sources, times, history limits and language/theme details in
-[docs/media](docs/media/README.md).
+The earlier browser captures and their dated observations are documented in the
+[media notes from that release](https://github.com/haiderhamad/InvestAtlas/blob/69eae55e9d6c64f0f3276a314fc770d88e0e125c/docs/media/README.md).
 
 ### Findings and limits at that checkpoint
 

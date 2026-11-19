@@ -92,20 +92,20 @@
     },
     {
       "path": "LICENSING.md",
-      "sha256": "8208c6f351a0791583d9f195e9327f6a8ab54ca79ae7ca016c795af20e516aaf",
-      "sourceSha256": "8208c6f351a0791583d9f195e9327f6a8ab54ca79ae7ca016c795af20e516aaf",
+      "sha256": "d285ab7cc4a96827b43f33edcf322959a169860441c3dc5a5b0eed7be2fd702c",
+      "sourceSha256": "d285ab7cc4a96827b43f33edcf322959a169860441c3dc5a5b0eed7be2fd702c",
       "operation": "documentation"
     },
     {
       "path": "README.md",
-      "sha256": "35ff8beeb753933d7dc707e1f256b6a5f0800c6b7291935c9f7ceda1039210d1",
-      "sourceSha256": "35ff8beeb753933d7dc707e1f256b6a5f0800c6b7291935c9f7ceda1039210d1",
+      "sha256": "35964a0a60fcf1a1654568133757af320bc402b3073a10717d787520e0d9a149",
+      "sourceSha256": "35964a0a60fcf1a1654568133757af320bc402b3073a10717d787520e0d9a149",
       "operation": "documentation"
     },
     {
       "path": "RELEASE_STATUS.md",
-      "sha256": "1d54be523802441cbd8a28ecb51ed9378e194b44f47a924f98962e64e48a0e84",
-      "sourceSha256": "1d54be523802441cbd8a28ecb51ed9378e194b44f47a924f98962e64e48a0e84",
+      "sha256": "1059469f05716c1d61aec6ae3614ccc1d256cd92c350d8e50e2f564a2a5caba2",
+      "sourceSha256": "1059469f05716c1d61aec6ae3614ccc1d256cd92c350d8e50e2f564a2a5caba2",
       "operation": "documentation"
     },
     {
@@ -1454,26 +1454,14 @@
     },
     {
       "path": "docs/media/README.md",
-      "sha256": "e5c36fa1ffac6708fc576dd57c951d1f707051a70e063a0045fc2ae33882db19",
-      "sourceSha256": "e5c36fa1ffac6708fc576dd57c951d1f707051a70e063a0045fc2ae33882db19",
+      "sha256": "303739ce9f7ec04780058a9ba5810f7d4b7748401c18bd11a5f16ffdb33b6c14",
+      "sourceSha256": "303739ce9f7ec04780058a9ba5810f7d4b7748401c18bd11a5f16ffdb33b6c14",
       "operation": "documentation"
     },
     {
-      "path": "docs/media/bitcoin-desktop.png",
-      "sha256": "5629841ad5085bb7dfc1a63b993e405b7b58418e6d346bfb23d9ef872c88bfdb",
-      "sourceSha256": "5629841ad5085bb7dfc1a63b993e405b7b58418e6d346bfb23d9ef872c88bfdb",
-      "operation": "documentation"
-    },
-    {
-      "path": "docs/media/etf-desktop.png",
-      "sha256": "55bbbc08c2fc2406eed050fdb8a40b030cb62ce3e010164e64f460505f240666",
-      "sourceSha256": "55bbbc08c2fc2406eed050fdb8a40b030cb62ce3e010164e64f460505f240666",
-      "operation": "documentation"
-    },
-    {
-      "path": "docs/media/gold-mobile-de.png",
-      "sha256": "5454f1b29760e9a3c54e323a0b2836937f8e3a1a6fc44cddfdd484214629d2e4",
-      "sourceSha256": "5454f1b29760e9a3c54e323a0b2836937f8e3a1a6fc44cddfdd484214629d2e4",
+      "path": "docs/media/investatlas-across-screens.png",
+      "sha256": "8ee69448ca49b67c8ac09cc7c8392ac38b3435dbb63bfa74051a20d41d47a544",
+      "sourceSha256": "8ee69448ca49b67c8ac09cc7c8392ac38b3435dbb63bfa74051a20d41d47a544",
       "operation": "documentation"
     },
     {
@@ -1483,21 +1471,9 @@
       "operation": "documentation"
     },
     {
-      "path": "docs/media/metals-iphone-pair.png",
-      "sha256": "9acc0b1856580e8fce38f7f424bb86bd2a1ede2fdb738fb6bc9d69b49087efad",
-      "sourceSha256": "9acc0b1856580e8fce38f7f424bb86bd2a1ede2fdb738fb6bc9d69b49087efad",
-      "operation": "documentation"
-    },
-    {
-      "path": "docs/media/metals-iphone-stage.html",
-      "sha256": "0a4619b2e280d79ed227a331ea9170f6a8a4ff448d56fb77abad11f4ef3acf5d",
-      "sourceSha256": "0a4619b2e280d79ed227a331ea9170f6a8a4ff448d56fb77abad11f4ef3acf5d",
-      "operation": "documentation"
-    },
-    {
-      "path": "docs/media/silver-mobile-ar.png",
-      "sha256": "d5944e8ae5e08be1bb85fb66e1c8eb66c2efea9b10a8975ff52e1933d7d5c872",
-      "sourceSha256": "d5944e8ae5e08be1bb85fb66e1c8eb66c2efea9b10a8975ff52e1933d7d5c872",
+      "path": "docs/media/investatlas-mobile-charts.png",
+      "sha256": "d2c26b1faadeb43f9e87336a0528a9a31de997bfd98e0a6634bd9afaa3705bc3",
+      "sourceSha256": "d2c26b1faadeb43f9e87336a0528a9a31de997bfd98e0a6634bd9afaa3705bc3",
       "operation": "documentation"
     },
     {

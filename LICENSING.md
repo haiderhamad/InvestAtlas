@@ -28,10 +28,9 @@ record, not a trademark registration or legal opinion.
 
 The README wordmark shares the app icon’s original IA geometry and is
 project artwork under Apache-2.0.
-Current README screenshots are actual browser captures with real provider
-observations, sources and timestamps, not historical posters or synthetic
-portfolio data. Their capture scope is recorded in [docs/media](docs/media/README.md).
-The paired mobile illustration frames two original, unaltered browser captures.
+The two README illustrations were supplied by the project owner and show
+English desktop and mobile views in device frames. The supplied PNGs and
+their checksums are documented in [README images](docs/media/README.md).
 Historical metals observations are credited to [Data by Standard Bullion](https://standardbullion.com/market-data).
 Market observations, third-party marks and externally rendered assets retain
 their respective terms; these screenshots supply no reusable market-data feed.

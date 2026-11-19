@@ -17,9 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="docs/media/metals-iphone-pair.png"><img src="docs/media/metals-iphone-pair.png" width="980" alt="Gold and silver over five years in InvestAtlas. German and Arabic mobile charts show dated spot prices in euros per fine gram and the available price history."></a>
+  <a href="docs/media/investatlas-across-screens.png"><img src="docs/media/investatlas-across-screens.png" width="600" alt="InvestAtlas across desktop and mobile. An ETF chart and gold and silver views appear in the English interface in dark and light themes."></a>
 </p>
-<p align="center">Historical closes · <a href="https://standardbullion.com/market-data">Data by Standard Bullion</a><br>Indicative spot · Gold API &nbsp;|&nbsp; EUR conversion · ECB</p>
 
 InvestAtlas brings portfolio tracking, market research and transparent Shariah
 screening into one personal workspace. It is built for investors who want to
@@ -72,29 +71,11 @@ they are not a religious ruling. See the
 
 ## Screenshots
 
-### 📱 Gold and silver on mobile
+<p align="center">
+  <a href="docs/media/investatlas-mobile-charts.png"><img src="docs/media/investatlas-mobile-charts.png" width="600" alt="Two English mobile views of InvestAtlas. The dark view shows gold per fine gram over five years. The light view shows the one-year silver chart."></a>
+</p>
 
-Open either original screenshot to read the quote and explore the layout at full size.
-Both were captured on November 17, 2026 in Chrome with an emulated iPhone viewport
-of 430 × 932 CSS pixels. Each five-year chart shows 595 available closes.
-
-| Original screenshot | Indicative spot price per fine gram | Quote time (UTC) | History through |
-| --- | ---: | --- | --- |
-| [Gold · German · dark](docs/media/gold-mobile-de.png) | €112.87 | 19:03 | Nov 15, 2026 |
-| [Silver · Arabic · light](docs/media/silver-mobile-ar.png) | €1.3836 | 19:05 | Nov 16, 2026 |
-
-Gold API supplies the spot observation, and the ECB reference rate supplies the
-EUR conversion. The line connects available historical closes. Gaps in the
-five-year window are possible. [Data by Standard Bullion](https://standardbullion.com/market-data).
-
-### Desktop charts
-
-| ETF · dark | Bitcoin · light |
-| --- | --- |
-| [![ISWD ETF with its dated quote and daily history](docs/media/etf-desktop.png)](docs/media/etf-desktop.png) | [![Bitcoin with its dated quote and daily history](docs/media/bitcoin-desktop.png)](docs/media/bitcoin-desktop.png) |
-
-These desktop views were captured on November 16, 2026. All screenshots use an empty
-Local Workspace with actual provider responses. [Capture details and image credits](docs/media/README.md).
+The figures shown are dated examples. Metal spot quotes come from Gold API, with ECB reference rates for EUR conversion. Historical metal closes are provided by [Data by Standard Bullion](https://standardbullion.com/market-data). [Image credits](docs/media/README.md).
 
 ## Quick start
 
@@ -250,8 +231,7 @@ do not authorize changes to a live Firebase project.
 
 [Apache License 2.0](LICENSE) applies to original source the owner is entitled
 to license. See [LICENSING](LICENSING.md), [asset provenance](ASSET_PROVENANCE.json)
-and [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md). The README's Gem mark retains
-Lucide's ISC notice; dependencies, fonts, trademarks and feeds keep their terms.
+and [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md). Dependencies, fonts, trademarks and market data retain their respective terms.
 Source availability supplies no provider subscription or redistribution permission.
 
 InvestAtlas is an informational tool. It provides no financial, investment,
