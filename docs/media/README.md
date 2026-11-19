@@ -23,7 +23,7 @@ The [paired mobile illustration](metals-iphone-pair.png) frames the two original
 
 ## Wordmark and notices
 
-The InvestAtlas wordmark reproduces the existing Gem and text identity from `src/components/layout/sidebar.tsx`. Its layout and text are project material under Apache-2.0. The Gem geometry comes from Lucide and retains its ISC notice in the [SVG](investatlas-logo.svg) and [third-party notices](../../THIRD_PARTY_NOTICES.md).
+The [InvestAtlas wordmark](investatlas-logo.svg) uses the same two original IA strokes as the [app icon](../../public/app-icon.svg). The monogram and wordmark layout are project artwork under Apache-2.0.
 
 Market observations, third-party marks and rendered fonts retain their own terms. The source license and asset provenance are described in [Licensing](../../LICENSING.md).
 
@@ -34,7 +34,7 @@ Market observations, third-party marks and rendered fonts retain their own terms
 | `bitcoin-desktop.png` | `5629841ad5085bb7dfc1a63b993e405b7b58418e6d346bfb23d9ef872c88bfdb` |
 | `etf-desktop.png` | `55bbbc08c2fc2406eed050fdb8a40b030cb62ce3e010164e64f460505f240666` |
 | `gold-mobile-de.png` | `5454f1b29760e9a3c54e323a0b2836937f8e3a1a6fc44cddfdd484214629d2e4` |
-| `investatlas-logo.svg` | `00d6f11faeb5a49dee2e842177f8122d556456ca986aca624c98fe9824a1e85f` |
+| `investatlas-logo.svg` | `636d4e0354e6255c268a3caf409c6d4e24d2985036870410543459de6b9dc6be` |
 | `metals-iphone-pair.png` | `9acc0b1856580e8fce38f7f424bb86bd2a1ede2fdb738fb6bc9d69b49087efad` |
 | `metals-iphone-stage.html` | `0a4619b2e280d79ed227a331ea9170f6a8a4ff448d56fb77abad11f4ef3acf5d` |
 | `silver-mobile-ar.png` | `d5944e8ae5e08be1bb85fb66e1c8eb66c2efea9b10a8975ff52e1933d7d5c872` |

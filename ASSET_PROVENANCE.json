@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "source": "public/app-icon.svg",
   "license": "Apache-2.0",
-  "preparedOn": "2026-11-14",
-  "authorship": "Original geometric SVG source created during owner-authorized InvestAtlas release preparation; no third-party artwork or font input.",
+  "preparedOn": "2026-11-19",
+  "authorship": "Original geometric SVG source for the owner-selected blue IA monogram; no third-party artwork or font input.",
   "authorization": "Owner approved new reproducible SVG icons and Apache-2.0 source/derivative licensing on 2026-11-14.",
   "priorArtwork": "Replaced artwork remains unverified, is preserved privately, and is excluded from this source candidate.",
   "generator": "scripts/generate-app-icons.mjs",
@@ -15,27 +15,27 @@
   "assets": [
     {
       "path": "public/app-icon.svg",
-      "sha256": "2166d40e719fa601e478372239b36e002f50c0f7dd63adca7582923f3b0bdcdf",
+      "sha256": "6770ad3368bde2596408a5cfcf7cab7fa8f2c6173eb91524ea0b5d953928266a",
       "license": "Apache-2.0"
     },
     {
       "path": "public/app-icon-192.png",
-      "sha256": "d6203f4420bcc0e40f7b55a5c09f9bb08b5f1162ea4bea2f23d40218e19e3d12",
+      "sha256": "17c0c87385fe550d67241e36042ce6e3780a685c0d4a96c1a2d946d6df460dfd",
       "license": "Apache-2.0"
     },
     {
       "path": "public/app-icon-512.png",
-      "sha256": "c9359b025b87869b47bd3f1717b553aed6a8be1f3b6177715448a66439d49751",
+      "sha256": "c2224b30e74373ff9a4588a0bce978fe3f8dc0be7114b5d5b5c57607a73651e0",
       "license": "Apache-2.0"
     },
     {
       "path": "public/apple-touch-icon.png",
-      "sha256": "9d983283926793c7229d6e1218f7e3894ac094306971c82c08946883395c90ee",
+      "sha256": "a2158103480b6d23b783e6056473a5318bb88fe4ca41657f681c5db5727b2008",
       "license": "Apache-2.0"
     },
     {
       "path": "src/app/favicon.ico",
-      "sha256": "4d1e711894431950f06140fce1b7c29e7c9e763b95c9d503b7ce731d707df1c6",
+      "sha256": "18e7eefb12ca2d49188414e6606e8888c0c9c691326333b3743f26c542747a06",
       "license": "Apache-2.0"
     }
   ]

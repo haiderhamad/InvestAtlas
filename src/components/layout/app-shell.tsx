@@ -39,6 +39,7 @@ import {
   resolvePersonalFinancialProviderAvailability,
   resolvePersonalProviderHintMode,
 } from '@/lib/financial-data/providers/personal-provider-availability';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -314,6 +315,7 @@ function MobileTopBar() {
         <Settings size={19} strokeWidth={2.3} aria-hidden="true" />
       </Link>
       <Link href="/" className="mobile-topbar-brand" aria-label={t('InvestAtlas dashboard')}>
+        <Image src="/app-icon.svg" alt="" width={24} height={24} unoptimized />
         {t('InvestAtlas')}
       </Link>
       <button

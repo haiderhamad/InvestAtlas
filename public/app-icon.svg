@@ -1,9 +1,8 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
-<!-- Original InvestAtlas vector geometry, created for the owner-approved 2026-11-14 source release preparation. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-labelledby="title">
-  <title id="title">InvestAtlas IA app icon</title>
-  <rect width="1024" height="1024" fill="#0f1a29"/>
-  <circle cx="512" cy="512" r="362" fill="none" stroke="#284059" stroke-width="20"/>
-  <path d="M244 340H388M316 340V700M244 700H388" fill="none" stroke="#f0f4ff" stroke-width="64" stroke-linecap="round"/>
-  <path d="M464 700L620 340L776 700M510 592H730" fill="none" stroke="#2dd4bf" stroke-width="64" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">InvestAtlas IA monogram</title>
+  <svg x="60" y="60" width="904" height="904" viewBox="0 0 52 52">
+    <path d="M8.5 13h12m-6 0v26m-6 0h12" fill="none" stroke="#4f8cff" stroke-width="4" stroke-linecap="round"/>
+    <path d="M22 39 32.5 13 43 39m-17-9h13" fill="none" stroke="#9dc6ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
 </svg>

@@ -1,7 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
-import { Gem, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useAppTranslation } from '@/lib/i18n/use-app-translation';
 import {
   getLegalDocument,
@@ -27,7 +28,7 @@ export function LegalDocumentPage({ kind }: { kind: LegalDocumentKind }) {
       <div className="legal-page-container">
         <header className="legal-page-header">
           <Link href="/" className="legal-brand" aria-label={document.backText}>
-            <span className="legal-brand-icon"><Gem size={20} /></span>
+            <Image src="/app-icon.svg" alt="" width={36} height={36} unoptimized />
             <span>{PRODUCT_NAME}</span>
           </Link>
           <span className="legal-demo-badge">{document.demoLabel}</span>

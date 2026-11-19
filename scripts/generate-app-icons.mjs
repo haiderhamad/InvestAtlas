@@ -19,15 +19,20 @@ const source = await readFile(join(root, sourcePath));
 if (/<(?:text|image|script|foreignObject)\b|\b(?:href|font-family)=/i.test(source.toString())) {
   throw new Error('App icon source must use font-independent local vector geometry.');
 }
-const png = (size) => sharp(source).resize(size, size).png({ compressionLevel: 9, adaptiveFiltering: false, palette: false }).toBuffer();
+const png = (size, opaque = false) => {
+  const icon = sharp(source).resize(size, size);
+  // Home-screen and maskable icons need a full-bleed background.
+  if (opaque) icon.flatten({ background: '#0f1a29' });
+  return icon.png({ compressionLevel: 9, adaptiveFiltering: false, palette: false }).toBuffer();
+};
 const outputs = new Map([
   [sourcePath, source],
-  ['public/app-icon-192.png', await png(192)],
-  ['public/app-icon-512.png', await png(512)],
-  ['public/apple-touch-icon.png', await png(180)],
+  ['public/app-icon-192.png', await png(192, true)],
+  ['public/app-icon-512.png', await png(512, true)],
+  ['public/apple-touch-icon.png', await png(180, true)],
 ]);
 const sizes = [16, 32, 48];
-const frames = await Promise.all(sizes.map(png));
+const frames = await Promise.all(sizes.map((size) => png(size)));
 const header = Buffer.alloc(6 + sizes.length * 16);
 header.writeUInt16LE(1, 2);
 header.writeUInt16LE(sizes.length, 4);
@@ -47,8 +52,8 @@ const provenance = {
   schemaVersion: 2,
   source: sourcePath,
   license: 'Apache-2.0',
-  preparedOn: '2026-11-14',
-  authorship: 'Original geometric SVG source created during owner-authorized InvestAtlas release preparation; no third-party artwork or font input.',
+  preparedOn: '2026-11-19',
+  authorship: 'Original geometric SVG source for the owner-selected blue IA monogram; no third-party artwork or font input.',
   authorization: 'Owner approved new reproducible SVG icons and Apache-2.0 source/derivative licensing on 2026-11-14.',
   priorArtwork: 'Replaced artwork remains unverified, is preserved privately, and is excluded from this source candidate.',
   generator: 'scripts/generate-app-icons.mjs',

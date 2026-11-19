@@ -1,8 +1,9 @@
 'use client';
 
 import { db } from '@/lib/db';
-import { Gem, Mail, Lock, ArrowRight, Eye, EyeOff, UserRound, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff, UserRound, AlertCircle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useAppTranslation } from '@/lib/i18n/use-app-translation';
@@ -219,9 +220,7 @@ function LoginPageContent() {
 
       <div className="login-container">
         <div className="login-brand">
-          <div className="login-logo">
-            <Gem size={28} />
-          </div>
+          <Image src="/app-icon.svg" alt="" width={56} height={56} unoptimized />
           <h1 className="login-title">InvestAtlas</h1>
           <p className="login-tagline">
             {t('Shariah-aware portfolio tracking, tax analysis, and strategy backtesting — with transparent evidence and uncertainty.')}

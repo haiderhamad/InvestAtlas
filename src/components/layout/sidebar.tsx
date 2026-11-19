@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -15,7 +16,6 @@ import {
 import {
   ChevronLeft,
   ChevronRight,
-  Gem,
   MoonStar,
   SunMedium,
   MoreVertical,
@@ -190,9 +190,10 @@ export default function Sidebar({
       >
         <Link
           href="/"
+          aria-label={t('InvestAtlas dashboard')}
           style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}
         >
-          <Gem size={20} style={{ color: 'var(--accent-blue)' }} />
+          <Image src="/app-icon.svg" alt="" width={28} height={28} unoptimized />
           {!isCollapsed && (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontWeight: 800, fontSize: 16 }}>{PRODUCT_NAME}</span>

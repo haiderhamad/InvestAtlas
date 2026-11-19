@@ -9943,19 +9943,6 @@ html[dir='rtl'] .table-toolbar {
   gap: 12px;
 }
 
-.login-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(79, 140, 255, 0.18) 0%, rgba(68, 211, 255, 0.12) 100%);
-  border: 1px solid rgba(101, 157, 255, 0.2);
-  color: var(--accent-blue);
-  box-shadow: 0 0 40px rgba(79, 140, 255, 0.12);
-}
-
 .login-title {
   font-size: 32px;
   font-weight: 800;
@@ -10492,17 +10479,6 @@ html[dir='rtl'] .table-toolbar {
   text-decoration: none;
 }
 
-.legal-brand-icon {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  color: var(--accent-blue);
-  background: var(--surface-accent-soft);
-  border: 1px solid var(--surface-border-soft);
-}
-
 .legal-demo-badge {
   padding: 6px 10px;
   border-radius: 999px;
@@ -10754,6 +10730,7 @@ html[dir='rtl'] .table-toolbar {
   }
 
   .mobile-topbar-brand {
+    gap: 6px;
     min-width: 0;
     font-size: 20px;
     font-weight: 800;

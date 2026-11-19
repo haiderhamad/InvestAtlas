@@ -68,8 +68,8 @@
     },
     {
       "path": "ASSET_PROVENANCE.json",
-      "sha256": "2c0ac3963843afb7d5a6f19bfa30e27f62c33634d3dbc43470f9ef60588d5618",
-      "sourceSha256": "2c0ac3963843afb7d5a6f19bfa30e27f62c33634d3dbc43470f9ef60588d5618",
+      "sha256": "45575153290dc318a93b74e95428abc29a89ffac332fb829e2f294b51c2b5223",
+      "sourceSha256": "45575153290dc318a93b74e95428abc29a89ffac332fb829e2f294b51c2b5223",
       "operation": "copy"
     },
     {
@@ -92,8 +92,8 @@
     },
     {
       "path": "LICENSING.md",
-      "sha256": "2e9ffd34804e4bbb4209542b8e1aa6149484ddb899003b7b579b60e2dc1260dd",
-      "sourceSha256": "2e9ffd34804e4bbb4209542b8e1aa6149484ddb899003b7b579b60e2dc1260dd",
+      "sha256": "8208c6f351a0791583d9f195e9327f6a8ab54ca79ae7ca016c795af20e516aaf",
+      "sourceSha256": "8208c6f351a0791583d9f195e9327f6a8ab54ca79ae7ca016c795af20e516aaf",
       "operation": "documentation"
     },
     {
@@ -992,8 +992,8 @@
     },
     {
       "path": "__tests__/legal/app-icon-provenance.test.ts",
-      "sha256": "4afa0d0089b7b39c8a5bb01609ad74a5a2ad3165189e180a6bbead5204b34d5e",
-      "sourceSha256": "4afa0d0089b7b39c8a5bb01609ad74a5a2ad3165189e180a6bbead5204b34d5e",
+      "sha256": "033e6e6976ec05e4b566ab60e671c3bef235232d714a4c7562e19ff8e73694ad",
+      "sourceSha256": "033e6e6976ec05e4b566ab60e671c3bef235232d714a4c7562e19ff8e73694ad",
       "operation": "copy"
     },
     {
@@ -1454,8 +1454,8 @@
     },
     {
       "path": "docs/media/README.md",
-      "sha256": "0e06b62b94ff1ed98d0a58a3d49bed13ec0b21be106dcc1e8692e2f8d2fc6c78",
-      "sourceSha256": "0e06b62b94ff1ed98d0a58a3d49bed13ec0b21be106dcc1e8692e2f8d2fc6c78",
+      "sha256": "e5c36fa1ffac6708fc576dd57c951d1f707051a70e063a0045fc2ae33882db19",
+      "sourceSha256": "e5c36fa1ffac6708fc576dd57c951d1f707051a70e063a0045fc2ae33882db19",
       "operation": "documentation"
     },
     {
@@ -1478,8 +1478,8 @@
     },
     {
       "path": "docs/media/investatlas-logo.svg",
-      "sha256": "00d6f11faeb5a49dee2e842177f8122d556456ca986aca624c98fe9824a1e85f",
-      "sourceSha256": "00d6f11faeb5a49dee2e842177f8122d556456ca986aca624c98fe9824a1e85f",
+      "sha256": "636d4e0354e6255c268a3caf409c6d4e24d2985036870410543459de6b9dc6be",
+      "sourceSha256": "636d4e0354e6255c268a3caf409c6d4e24d2985036870410543459de6b9dc6be",
       "operation": "documentation"
     },
     {
@@ -1556,26 +1556,26 @@
     },
     {
       "path": "public/app-icon-192.png",
-      "sha256": "d6203f4420bcc0e40f7b55a5c09f9bb08b5f1162ea4bea2f23d40218e19e3d12",
-      "sourceSha256": "d6203f4420bcc0e40f7b55a5c09f9bb08b5f1162ea4bea2f23d40218e19e3d12",
+      "sha256": "17c0c87385fe550d67241e36042ce6e3780a685c0d4a96c1a2d946d6df460dfd",
+      "sourceSha256": "17c0c87385fe550d67241e36042ce6e3780a685c0d4a96c1a2d946d6df460dfd",
       "operation": "copy"
     },
     {
       "path": "public/app-icon-512.png",
-      "sha256": "c9359b025b87869b47bd3f1717b553aed6a8be1f3b6177715448a66439d49751",
-      "sourceSha256": "c9359b025b87869b47bd3f1717b553aed6a8be1f3b6177715448a66439d49751",
+      "sha256": "c2224b30e74373ff9a4588a0bce978fe3f8dc0be7114b5d5b5c57607a73651e0",
+      "sourceSha256": "c2224b30e74373ff9a4588a0bce978fe3f8dc0be7114b5d5b5c57607a73651e0",
       "operation": "copy"
     },
     {
       "path": "public/app-icon.svg",
-      "sha256": "2166d40e719fa601e478372239b36e002f50c0f7dd63adca7582923f3b0bdcdf",
-      "sourceSha256": "2166d40e719fa601e478372239b36e002f50c0f7dd63adca7582923f3b0bdcdf",
+      "sha256": "6770ad3368bde2596408a5cfcf7cab7fa8f2c6173eb91524ea0b5d953928266a",
+      "sourceSha256": "6770ad3368bde2596408a5cfcf7cab7fa8f2c6173eb91524ea0b5d953928266a",
       "operation": "copy"
     },
     {
       "path": "public/apple-touch-icon.png",
-      "sha256": "9d983283926793c7229d6e1218f7e3894ac094306971c82c08946883395c90ee",
-      "sourceSha256": "9d983283926793c7229d6e1218f7e3894ac094306971c82c08946883395c90ee",
+      "sha256": "a2158103480b6d23b783e6056473a5318bb88fe4ca41657f681c5db5727b2008",
+      "sourceSha256": "a2158103480b6d23b783e6056473a5318bb88fe4ca41657f681c5db5727b2008",
       "operation": "copy"
     },
     {
@@ -1604,8 +1604,8 @@
     },
     {
       "path": "scripts/generate-app-icons.mjs",
-      "sha256": "0d91b56a409c51a7d56036d3b723d75f0e4fe7d4940b11c1d6df71580cf00eba",
-      "sourceSha256": "0d91b56a409c51a7d56036d3b723d75f0e4fe7d4940b11c1d6df71580cf00eba",
+      "sha256": "c22bb3ee7a160b0262c52ef23d20ef37292cc6e9d41c90ea52145793d70cbad6",
+      "sourceSha256": "c22bb3ee7a160b0262c52ef23d20ef37292cc6e9d41c90ea52145793d70cbad6",
       "operation": "copy"
     },
     {
@@ -1958,8 +1958,8 @@
     },
     {
       "path": "src/app/favicon.ico",
-      "sha256": "4d1e711894431950f06140fce1b7c29e7c9e763b95c9d503b7ce731d707df1c6",
-      "sourceSha256": "4d1e711894431950f06140fce1b7c29e7c9e763b95c9d503b7ce731d707df1c6",
+      "sha256": "18e7eefb12ca2d49188414e6606e8888c0c9c691326333b3743f26c542747a06",
+      "sourceSha256": "18e7eefb12ca2d49188414e6606e8888c0c9c691326333b3743f26c542747a06",
       "operation": "copy"
     },
     {
@@ -1970,8 +1970,8 @@
     },
     {
       "path": "src/app/globals.css",
-      "sha256": "c17f8b662ccab38b9b780fbeeb2d477d077706e983428d5a3d61a0092c313a86",
-      "sourceSha256": "c17f8b662ccab38b9b780fbeeb2d477d077706e983428d5a3d61a0092c313a86",
+      "sha256": "5f9de479f1e8ac56a3077a5bc3814483919061e362e9fae899bfd0fbfbe0a332",
+      "sourceSha256": "b30c4bdd0c0cc77fa62d686747f6322ff8e358a7100655d1e908c0f7b8bca412",
       "operation": "copy"
     },
     {
@@ -1988,8 +1988,8 @@
     },
     {
       "path": "src/app/login/page.tsx",
-      "sha256": "2701ded4c369504c0203d0b944c7c5c6358fddf255a0ba5c265a74ed4dff5b51",
-      "sourceSha256": "2701ded4c369504c0203d0b944c7c5c6358fddf255a0ba5c265a74ed4dff5b51",
+      "sha256": "794a6c3b4ba7c31db4d5d3f6867756867901e98267bb4be5c0374400621944ef",
+      "sourceSha256": "794a6c3b4ba7c31db4d5d3f6867756867901e98267bb4be5c0374400621944ef",
       "operation": "copy"
     },
     {
@@ -2156,8 +2156,8 @@
     },
     {
       "path": "src/components/layout/app-shell.tsx",
-      "sha256": "bcb68d2b5909a039668aafb583033393a73b6713f50f0b2a243cc6be5a6ee933",
-      "sourceSha256": "bcb68d2b5909a039668aafb583033393a73b6713f50f0b2a243cc6be5a6ee933",
+      "sha256": "d0f4c1fe6965aff91941a965e73f3b12956c6e7413e877bfc5e5c12bf3e3ed0e",
+      "sourceSha256": "d0f4c1fe6965aff91941a965e73f3b12956c6e7413e877bfc5e5c12bf3e3ed0e",
       "operation": "copy"
     },
     {
@@ -2186,8 +2186,8 @@
     },
     {
       "path": "src/components/layout/sidebar.tsx",
-      "sha256": "9ae44ea6919b9770c2dd6800e85532112da22efd708742e5493618b62b0a21bb",
-      "sourceSha256": "9ae44ea6919b9770c2dd6800e85532112da22efd708742e5493618b62b0a21bb",
+      "sha256": "15993c3d2ea4c8781612cca9250589a20d7f6f3571b759d10d7d4b9ad0b1da36",
+      "sourceSha256": "15993c3d2ea4c8781612cca9250589a20d7f6f3571b759d10d7d4b9ad0b1da36",
       "operation": "copy"
     },
     {
@@ -2198,8 +2198,8 @@
     },
     {
       "path": "src/components/legal/legal-document-page.tsx",
-      "sha256": "66dbb1a3dd7116368e8399edc6f0ffa7797a95469cbac9d3910227e8b7ce5b4d",
-      "sourceSha256": "66dbb1a3dd7116368e8399edc6f0ffa7797a95469cbac9d3910227e8b7ce5b4d",
+      "sha256": "92c56839b640eebab126f802699b553ca0c3e33cd5710e891372ddeffc91353f",
+      "sourceSha256": "92c56839b640eebab126f802699b553ca0c3e33cd5710e891372ddeffc91353f",
       "operation": "copy"
     },
     {

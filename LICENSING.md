@@ -13,8 +13,8 @@ not supply a hosted account, cloud credentials or market-data entitlements.
 ## Artwork and external assets
 
 The five current app-icon/favicon files are generated from original, font-free
-vector geometry in `public/app-icon.svg`, created during owner-authorized release
-preparation on 2026-11-14. The owner approved licensing this source and its
+vector geometry in `public/app-icon.svg`. The owner selected the blue IA
+monogram on 2026-11-19. The owner approved licensing this source and its
 PNG/ICO derivatives under the existing Apache-2.0 selection. Exact source and
 output hashes are recorded in [ASSET_PROVENANCE](ASSET_PROVENANCE.json).
 Run `npm run icons:generate` to regenerate or `npm run icons:check` to verify
@@ -26,9 +26,8 @@ historical artwork rights. Unused starter SVGs and legacy gold/silver photos
 also remain excluded. The provenance record is an engineering source/derivation
 record, not a trademark registration or legal opinion.
 
-The README wordmark reproduces the existing app's Gem-and-text identity. Its
-Gem paths retain Lucide's ISC copyright/permission notice in the SVG and in
-THIRD_PARTY_NOTICES; it is separate from the original app-icon generator above.
+The README wordmark shares the app icon’s original IA geometry and is
+project artwork under Apache-2.0.
 Current README screenshots are actual browser captures with real provider
 observations, sources and timestamps, not historical posters or synthetic
 portfolio data. Their capture scope is recorded in [docs/media](docs/media/README.md).
