@@ -7401,6 +7401,15 @@ tr:hover td {
   max-width: 0;
 }
 
+.ledger-transactions-table th,
+.ledger-transactions-table td {
+  max-width: none;
+}
+
+.ledger-transactions-table th {
+  white-space: normal;
+}
+
 /* Higher specificity to override .badge { display: inline-flex } */
 .badge.ledger-badge {
   display: inline-flex;
@@ -7411,6 +7420,15 @@ tr:hover td {
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: middle;
+}
+
+.badge.ledger-account-badge {
+  display: inline-block;
+  max-inline-size: min(100%, 24ch);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+  text-align: start;
 }
 
 .ledger-cell-date,

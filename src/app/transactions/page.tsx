@@ -379,7 +379,7 @@ export default function TransactionsPage() {
           </div>
 
           <div className="table-container" style={{ border: 'none' }}>
-            <table className="ledger-table">
+            <table className="ledger-table ledger-transactions-table">
 
               <thead>
                 <tr>
@@ -444,7 +444,7 @@ export default function TransactionsPage() {
                           </span>
                         </td>
                         <td>
-                          <span className="badge badge-blue ledger-badge" title={venueLabel} style={{ maxWidth: 'none', textOverflow: 'unset' }}>
+                          <span className="badge badge-blue ledger-badge ledger-account-badge" title={venueLabel}>
                             {venueLabel}
                           </span>
                         </td>
