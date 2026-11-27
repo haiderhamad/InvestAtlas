@@ -3,7 +3,8 @@
 import AppShell from '@/components/layout/app-shell';
 import { useMobileViewport } from '@/lib/ui/use-mobile-viewport';
 import { useReducedMotion } from '@/lib/ui/use-reduced-motion';
-import { SELF_HOSTED_MARKET } from '@/lib/financial-data/providers/source-selection';
+import { SELF_HOSTED_MARKET, SOURCE_CHANGE } from '@/lib/financial-data/providers/source-selection';
+import { TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT } from '@/lib/financial-data/providers/tiingo-browser';
 import { getPersonalAssetsByClass, USER_ASSETS_CHANGE_EVENT } from '@/lib/config/personal-asset-registry';
 import { getAssetIconUrl } from '@/lib/config/asset-icon-sources';
 import {
@@ -52,13 +53,14 @@ import {
   TrendingUp,
   X,
 } from 'lucide-react';
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useAppTranslation } from '@/lib/i18n/use-app-translation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { fetchFinancialData } from '@/lib/financial-data/client';
-import { fetchCurrentQuoteBatches } from '@/lib/financial-data/quotes/client';
+import { currentQuoteFreshUntil, fetchCurrentQuoteBatches } from '@/lib/financial-data/quotes/client';
 import { chartCurrentQuote, type ChartCurrentQuote } from '@/lib/charts/current-quote';
 import { useDisplayCurrencyPreference } from '@/lib/preferences/display-currency';
+import { BROWSER_WORKSPACE_CHANGE_EVENT, getActiveBrowserWorkspaceUserId } from '@/lib/storage/workspace-storage';
 import {
   Area,
   AreaChart,
@@ -78,7 +80,12 @@ interface PricePoint {
   high?: number | null;
   low?: number | null;
   volume?: number | null;
+  sourceRef?: string | null;
+  dataQuality?: string;
+  priceQuality?: string;
 }
+
+type HistorySource = { ref?: string; kind?: string; providerId?: string; providerName?: string };
 
 function metalHistoryPerGram(points: PricePoint[]): PricePoint[] {
   return points.map((point) => ({
@@ -125,7 +132,7 @@ function formatResolutionLabel(interval: string) {
   }
 }
 
-function formatTooltipLabel(date: string, interval: string, language: string) {
+function formatTooltipLabel(date: string, interval: string, language: string, showSeconds = false) {
   const parsed = parseChartDate(date);
   const locale = language === 'de' ? 'de-DE' : language === 'ar' ? 'ar-SA' : 'en-US';
 
@@ -139,6 +146,7 @@ function formatTooltipLabel(date: string, interval: string, language: string) {
       year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
+      second: showSeconds ? '2-digit' : undefined,
       hour12: language !== 'de',
     }).format(parsed);
   }
@@ -256,16 +264,48 @@ function getTaxLensLabel(assetConfig: AssetConfig | undefined, t: (s: string) =>
 }
 
 const CHART_COPY = {
-  en: { changeAsset: 'Change asset', details: 'Asset details', historyUnavailable: 'History unavailable', returnUnavailable: 'Return unavailable', indicators: 'Indicators', rawSummary: 'Unadjusted history · indicators disabled', available: 'Available history', previous: 'Previous window', next: 'Next window', latest: 'Latest window', pan: 'Chart navigation', keys: 'Use Left and Right arrows to move the window; Home returns to the latest window.', empty: 'No observations in this window.', single: 'Only one observation in this window.', period: 'SMA period (2–400 whole observations)', periodInvalid: 'Enter a whole number from 2 to 400.', points: (count: number, range: string) => `${count} points in ${range} view` },
-  de: { changeAsset: 'Wertpapier wechseln', details: 'Wertpapierdetails', historyUnavailable: 'Historie nicht verfügbar', returnUnavailable: 'Rendite nicht verfügbar', indicators: 'Indikatoren', rawSummary: 'Unbereinigte Historie · Indikatoren deaktiviert', available: 'Verfügbare Historie', previous: 'Vorheriges Zeitfenster', next: 'Nächstes Zeitfenster', latest: 'Aktuelles Zeitfenster', pan: 'Diagrammnavigation', keys: 'Mit den Pfeiltasten links und rechts das Zeitfenster verschieben; Pos1 kehrt zum aktuellen Zeitfenster zurück.', empty: 'Keine Beobachtungen in diesem Zeitfenster.', single: 'Nur eine Beobachtung in diesem Zeitfenster.', period: 'SMA-Periode (2–400 ganze Beobachtungen)', periodInvalid: 'Eine ganze Zahl von 2 bis 400 eingeben.', points: (count: number, range: string) => `${count} Datenpunkte im Zeitfenster ${range}` },
-  ar: { changeAsset: 'تغيير الأصل', details: 'تفاصيل الأصل', historyUnavailable: 'السجل غير متاح', returnUnavailable: 'العائد غير متاح', indicators: 'المؤشرات', rawSummary: 'سجل غير معدل · المؤشرات معطلة', available: 'السجل المتاح', previous: 'الفترة السابقة', next: 'الفترة التالية', latest: 'أحدث فترة', pan: 'التنقل في الرسم البياني', keys: 'استخدم سهمي اليسار واليمين لتحريك الفترة؛ يعيد زر Home أحدث فترة.', empty: 'لا توجد بيانات في هذه الفترة.', single: 'توجد نقطة بيانات واحدة فقط في هذه الفترة.', period: 'فترة المتوسط المتحرك البسيط (عدد صحيح من ٢ إلى ٤٠٠)', periodInvalid: 'أدخل عدداً صحيحاً من ٢ إلى ٤٠٠.', points: (count: number, range: string) => `${count.toLocaleString('ar-SA')} نقطة بيانات في فترة ${range}` },
+  en: { legend: 'Chart legend', changeAsset: 'Change asset', details: 'Asset details', historyUnavailable: 'History unavailable', returnUnavailable: 'Return unavailable', indicators: 'Indicators', rawSummary: 'Unadjusted history · indicators disabled', available: 'Available history', previous: 'Previous window', next: 'Next window', latest: 'Latest window', pan: 'Chart navigation', keys: 'Use Left and Right arrows to move the window; Home returns to the latest window.', empty: 'No observations in this window.', single: 'Only one observation in this window.', period: 'SMA period (2–400 whole observations)', periodInvalid: 'Enter a whole number from 2 to 400.', points: (count: number, range: string) => `${count} ${count === 1 ? 'point' : 'points'} in ${range} view` },
+  de: { legend: 'Diagrammlegende', changeAsset: 'Wertpapier wechseln', details: 'Wertpapierdetails', historyUnavailable: 'Historie nicht verfügbar', returnUnavailable: 'Rendite nicht verfügbar', indicators: 'Indikatoren', rawSummary: 'Unbereinigte Historie · Indikatoren deaktiviert', available: 'Verfügbare Historie', previous: 'Vorheriges Zeitfenster', next: 'Nächstes Zeitfenster', latest: 'Aktuelles Zeitfenster', pan: 'Diagrammnavigation', keys: 'Mit den Pfeiltasten links und rechts das Zeitfenster verschieben; Pos1 kehrt zum aktuellen Zeitfenster zurück.', empty: 'Keine Beobachtungen in diesem Zeitfenster.', single: 'Nur eine Beobachtung in diesem Zeitfenster.', period: 'SMA-Periode (2–400 ganze Beobachtungen)', periodInvalid: 'Eine ganze Zahl von 2 bis 400 eingeben.', points: (count: number, range: string) => `${count} ${count === 1 ? 'Datenpunkt' : 'Datenpunkte'} im Zeitfenster ${range}` },
+  ar: { legend: 'مفتاح الرسم البياني', changeAsset: 'تغيير الأصل', details: 'تفاصيل الأصل', historyUnavailable: 'السجل غير متاح', returnUnavailable: 'العائد غير متاح', indicators: 'المؤشرات', rawSummary: 'سجل غير معدل · المؤشرات معطلة', available: 'السجل المتاح', previous: 'الفترة السابقة', next: 'الفترة التالية', latest: 'أحدث فترة', pan: 'التنقل في الرسم البياني', keys: 'استخدم سهمي اليسار واليمين لتحريك الفترة؛ يعيد زر Home أحدث فترة.', empty: 'لا توجد بيانات في هذه الفترة.', single: 'توجد نقطة بيانات واحدة فقط في هذه الفترة.', period: 'فترة المتوسط المتحرك البسيط (عدد صحيح من ٢ إلى ٤٠٠)', periodInvalid: 'أدخل عدداً صحيحاً من ٢ إلى ٤٠٠.', points: (count: number, range: string) => `${count.toLocaleString('ar-SA')} نقطة بيانات في فترة ${range}` },
+} as const;
+const SMA_COVERAGE_COPY = {
+  en: {
+    warmup: (period: string) => `First value at observation ${period}.`,
+    insufficient: (available: string, period: string) => `${available} of ${period} observations available.`,
+    outsideWindow: 'No calculated values in this window.',
+  },
+  de: {
+    warmup: (period: string) => `Erster Wert ab dem ${period}. Datenpunkt.`,
+    insufficient: (available: string, period: string) => `${available} von ${period} Datenpunkten verfügbar.`,
+    outsideWindow: 'Keine berechneten Werte in diesem Zeitfenster.',
+  },
+  ar: {
+    warmup: (period: string) => `تظهر أول قيمة عند نقطة البيانات رقم ${period}.`,
+    insufficient: (available: string, period: string) => `${available} من أصل ${period} نقطة بيانات متاحة.`,
+    outsideWindow: 'لا توجد قيم محسوبة في هذه الفترة.',
+  },
+} as const;
+const DEMO_CLOSE_LABEL = {
+  en: 'Illustrative demo close',
+  de: 'Beispielhafter Demo-Schlusskurs',
+  ar: 'سعر إغلاق تجريبي توضيحي',
 } as const;
 const EMPTY_HISTORY: PricePoint[] = [];
-const QUOTE_COPY = {
-  en: { latest: 'Latest available quote', close: 'Last historical close', demo: 'Illustrative demo quote', loading: 'Loading quote…', unavailable: 'Quote unavailable', asOf: 'As of', refresh: 'Refresh quote' },
-  de: { latest: 'Zuletzt verfügbarer Kurs', close: 'Letzter historischer Schlusskurs', demo: 'Beispielhafter Demokurs', loading: 'Kurs wird geladen…', unavailable: 'Kurs nicht verfügbar', asOf: 'Stand', refresh: 'Kurs aktualisieren' },
-  ar: { latest: 'آخر سعر متاح', close: 'آخر سعر إغلاق تاريخي', demo: 'سعر تجريبي توضيحي', loading: 'جارٍ تحميل السعر…', unavailable: 'السعر غير متاح', asOf: 'بتاريخ', refresh: 'تحديث السعر' },
-} as const;
+
+function subscribeToBrowserWorkspace(onChange: () => void) {
+  window.addEventListener(BROWSER_WORKSPACE_CHANGE_EVENT, onChange);
+  return () => window.removeEventListener(BROWSER_WORKSPACE_CHANGE_EVENT, onChange);
+}
+
+interface ChartQuoteResult {
+  key: string;
+  revision: number;
+  quote: ChartCurrentQuote | null;
+  freshUntil: number | null;
+  failed: boolean;
+  rateLimited: boolean;
+}
+
 interface HistoryResult {
   key: string;
   points: PricePoint[];
@@ -273,17 +313,17 @@ interface HistoryResult {
   trust: HistoryTrustState | null;
   source: string | null;
   closeOnly?: boolean;
+  demo?: boolean;
   raw: boolean;
-  error: string | null;
 }
 
 export default function ChartsPage() {
   const { t, language } = useAppTranslation();
   const locale = language === 'de' ? 'de-DE' : language === 'ar' ? 'ar-SA' : 'en-US';
   const copy = CHART_COPY[language === 'de' || language === 'ar' ? language : 'en'];
-  const quoteCopy = QUOTE_COPY[language === 'de' || language === 'ar' ? language : 'en'];
   const formatRangeLabel = (range: ChartRange) => range === 'All' ? copy.available : range;
   const { user } = useAuth();
+  const workspaceOwner = useSyncExternalStore(subscribeToBrowserWorkspace, getActiveBrowserWorkspaceUserId, () => undefined);
   const isMobileViewport = useMobileViewport();
   const reducedMotion = useReducedMotion();
   const [assetPickerExpanded, setAssetPickerExpanded] = useState(false);
@@ -301,10 +341,15 @@ export default function ChartsPage() {
   const [showSma1, setShowSma1] = useState(true);
   const [showSma2, setShowSma2] = useState(true);
   const [historyResult, setHistoryResult] = useState<HistoryResult | null>(null);
-  const [quoteResult, setQuoteResult] = useState<{ key: string; quote: ChartCurrentQuote | null } | null>(null);
+  const [quoteResult, setQuoteResult] = useState<ChartQuoteResult | null>(null);
   const [quoteRevision, setQuoteRevision] = useState(0);
+  const [sourceRevision, setSourceRevision] = useState(0);
+  const [quoteTime, setQuoteTime] = useState(Date.now);
+  const [quoteCooldown, setQuoteCooldown] = useState<{ workspace: string; until: number } | null>(null);
+  const quoteCooldownRef = useRef<typeof quoteCooldown>(null);
   const [counterpartResult, setCounterpartResult] = useState<{ key: string; points: PricePoint[] } | null>(null);
   const [priceChartElement, setPriceChartElement] = useState<HTMLDivElement | null>(null);
+  const [legendElement, setLegendElement] = useState<HTMLDivElement | null>(null);
   const [priceChartSize, setPriceChartSize] = useState({ width: 0, height: 500 });
   const [showGoldSilverRatio, setShowGoldSilverRatio] = useState(false);
   const [windowPosition, setWindowPosition] = useState<{ key: string; range: ChartRange; end: number } | null>(null);
@@ -323,6 +368,16 @@ export default function ChartsPage() {
             taxRegime: 'capital_income',
           }]), []);
   const [registryRevision, setRegistryRevision] = useState(0);
+  useEffect(() => {
+    const changed = () => setSourceRevision(value => value + 1);
+    window.addEventListener(SOURCE_CHANGE, changed);
+    window.addEventListener(TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT, changed);
+    return () => {
+      window.removeEventListener(SOURCE_CHANGE, changed);
+      window.removeEventListener(TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT, changed);
+    };
+  }, []);
+
   useEffect(() => {
     const sync = () => setRegistryRevision(value => value + 1);
     window.addEventListener(USER_ASSETS_CHANGE_EVENT, sync);
@@ -472,27 +527,78 @@ export default function ChartsPage() {
     ? selectedRange === '3Y' ? '3y' : selectedRange === '5Y' || selectedRange === 'All' ? '5y' : '1y'
     : null;
 
-  const historyKey = `${asset}:${displayCurrency}:${fetchInterval}:${requestedHistoryRange ?? 'default'}`;
-  const quoteKey = `${user?.id ?? 'anonymous'}:${isDemoSnapshot}:${asset}:${displayCurrency}:${quoteRevision}`;
-  const currentQuote = quoteResult?.key === quoteKey ? quoteResult.quote : null;
-  const quoteLoading = quoteResult?.key !== quoteKey;
+  const workspaceKey = JSON.stringify([workspaceOwner === undefined, workspaceOwner, user?.id ?? null, isDemoSnapshot]);
+  const marketScope = JSON.stringify([workspaceKey, displayCurrency, sourceRevision]);
+  const quoteKey = JSON.stringify([marketScope, asset, selectedAsset?.yahooSymbol, selectedAsset?.nativeCurrency]);
+  const activeQuote = quoteResult?.key === quoteKey ? quoteResult : null;
+  const retryAt = quoteCooldown?.workspace === workspaceKey && quoteCooldown.until > quoteTime ? quoteCooldown.until : null;
+  const quoteLoading = retryAt === null && activeQuote?.revision !== quoteRevision;
+  const currentQuote = activeQuote && (
+    activeQuote.freshUntil === null
+      ? !quoteLoading && !activeQuote.failed
+      : activeQuote.freshUntil > quoteTime
+  ) ? activeQuote.quote : null;
+  const quoteExpiresAt = currentQuote ? activeQuote?.freshUntil : null;
+  const nextQuoteDeadline = Math.min(quoteExpiresAt ?? Infinity, retryAt ?? Infinity);
+  useEffect(() => {
+    if (!Number.isFinite(nextQuoteDeadline)) return;
+    // Timers overflow at roughly 24 days. Recheck unusually long deadlines in chunks.
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      timer = setTimeout(() => {
+        const now = Date.now();
+        setQuoteTime(now);
+        if (now < nextQuoteDeadline) schedule();
+      }, Math.max(0, Math.min(nextQuoteDeadline - Date.now(), 2_147_483_647)));
+    };
+    schedule();
+    return () => clearTimeout(timer);
+  }, [nextQuoteDeadline]);
+
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
+    const apply = (quote: ChartCurrentQuote | null, freshUntil: number | null, rateLimited: boolean, until?: number) => {
+      if (!active) return;
+      const now = Date.now();
+      if (until !== undefined) {
+        const cooldown = { workspace: workspaceKey, until };
+        quoteCooldownRef.current = cooldown;
+        setQuoteCooldown(cooldown);
+      }
+      setQuoteTime(now);
+      setQuoteResult(previous => {
+        const lastGood = previous?.key === quoteKey && previous.freshUntil !== null && previous.freshUntil > now
+          ? previous : null;
+        return {
+          key: quoteKey, revision: quoteRevision, failed: quote === null, rateLimited,
+          quote: quote ?? lastGood?.quote ?? null,
+          freshUntil: quote ? freshUntil : lastGood?.freshUntil ?? null,
+        };
+      });
+    };
+    const cooldown = quoteCooldownRef.current;
+    if (cooldown?.workspace === workspaceKey && cooldown.until > Date.now()) {
+      apply(null, null, true);
+      return;
+    }
     void fetchCurrentQuoteBatches([asset], displayCurrency, undefined, controller.signal)
       .then(result => {
-        if (active) setQuoteResult({ key: quoteKey, quote: chartCurrentQuote(result.prices[asset], asset, displayCurrency, isMetal) });
+        const snapshot = result.prices[asset];
+        const quote = chartCurrentQuote(snapshot, asset, displayCurrency, isMetal);
+        apply(quote, quote ? currentQuoteFreshUntil(snapshot) : null, result.issues?.[asset] === 'rate_limited', result.retryAt);
       })
-      .catch(() => { if (active) setQuoteResult({ key: quoteKey, quote: null }); });
+      .catch(() => apply(null, null, false));
     return () => { active = false; controller.abort(); };
-  }, [asset, displayCurrency, isMetal, quoteKey]);
-  const counterpartKey = `${counterpartSymbol}:${displayCurrency}:${fetchInterval}:${requestedHistoryRange ?? 'default'}`;
+  }, [asset, displayCurrency, isMetal, quoteKey, quoteRevision, workspaceKey]);
+  const historyKey = JSON.stringify([quoteKey, fetchInterval, requestedHistoryRange]);
+  const counterpartKey = JSON.stringify([marketScope, counterpartSymbol, fetchInterval, requestedHistoryRange]);
   // Key matching hides the previous payload on the very first render after selection.
   const result = historyResult?.key === historyKey ? historyResult : null;
   const history = result?.points ?? EMPTY_HISTORY;
   const counterpartHistory = counterpartResult?.key === counterpartKey ? counterpartResult.points : EMPTY_HISTORY;
   const loading = !result || result.status === 'loading';
-  const error = result?.error ?? null;
+  const error = result?.status === 'error';
   const historyTrustState = result?.trust ?? null;
   const historySource = result?.source ?? null;
   const historyIsRawUnadjusted = result?.raw ?? false;
@@ -538,7 +644,7 @@ export default function ChartsPage() {
     const loadHistory = async () => {
       setHistoryResult({
         key: historyKey, points: [], status: 'loading',
-        trust: null, source: null, raw: false, error: null,
+        trust: null, source: null, raw: false,
       });
 
       try {
@@ -548,28 +654,36 @@ export default function ChartsPage() {
         );
         const data = await response.json();
 
-        if (!response.ok || !data.prices?.length) {
-          throw new Error(data.error || `No historical data available for ${asset}`);
+        if (!response.ok || !Array.isArray(data.prices) || data.prices.length === 0) {
+          throw new Error('History unavailable');
         }
 
         if (isActive) {
-          const market = Array.isArray(data.sources) ? data.sources.find((s: { kind?: string } | null) => s?.kind === 'market') : undefined;
+          const points: PricePoint[] = isMetal ? metalHistoryPerGram(data.prices) : data.prices;
+          const latest = points.at(-1);
+          const sourceRef = latest?.sourceRef;
+          const sources: (HistorySource | null)[] = Array.isArray(data.sources) ? data.sources : [];
+          const market = sources.find(source => source?.kind === 'market'
+            && (sourceRef === undefined || (typeof sourceRef === 'string' && sourceRef.trim() && source.ref === sourceRef)));
+          const providerName = typeof market?.providerName === 'string' ? market.providerName.trim() : '';
+          const providerId = market?.providerId;
           setHistoryResult({
             key: historyKey,
-            points: isMetal ? metalHistoryPerGram(data.prices) : data.prices,
+            points,
             status: 'ready',
-            source: market?.providerName ?? null,
-            closeOnly: data.prices.every((point: { dataQuality?: string }) => point.dataQuality === 'close_only'),
+            source: providerName && providerName.toLowerCase() !== 'unknown provider' && providerId !== 'unknown_provider' ? providerName : null,
+            closeOnly: points.every(point => point.dataQuality === 'close_only'),
+            demo: data.synthetic === true || data.dataMode === 'demo_snapshot'
+              || latest?.dataQuality === 'demo' || latest?.priceQuality === 'demo'
+              || providerId === 'investatlas_demo_snapshot' || providerId === 'twelve_demo_daily',
             trust: getHistoryTrustState(data),
             raw: data.adjustment === 'raw_unadjusted',
-            error: null,
           });
         }
-      } catch (loadError) {
+      } catch {
         if (isActive) {
           setHistoryResult({
             key: historyKey, points: [], status: 'error', source: null, trust: null, raw: false,
-            error: loadError instanceof Error ? loadError.message : 'Failed to load history',
           });
         }
       }
@@ -685,10 +799,23 @@ export default function ChartsPage() {
     return chartData.slice(startIndex, startIndex + visibleHistory.length);
   }, [chartData, history, visibleHistory]);
 
+  const visibleSmaCounts = visibleChartData.reduce((counts, point) => {
+    if (Number.isFinite(point.sma1)) counts.first += 1;
+    if (Number.isFinite(point.sma2)) counts.second += 1;
+    return counts;
+  }, { first: 0, second: 0 });
+  const plotSma1 = showSma1 && visibleSmaCounts.first > 0;
+  const plotSma2 = showSma2 && visibleSmaCounts.second > 0;
+  const smaCoverageCopy = SMA_COVERAGE_COPY[language];
+  const smaCoverage = [
+    { id: 'sma1', period: sma1, enabled: showSma1, values: visibleSmaCounts.first },
+    { id: 'sma2', period: sma2, enabled: showSma2, values: visibleSmaCounts.second },
+  ].filter(({ enabled, values }) => technicalIndicatorsAvailable && enabled && (values === 0 || values < visibleHistory.length));
+
   const priceDomain = getChartDomain(visibleChartData.flatMap((point) => [
     point.close,
-    ...(technicalIndicatorsAvailable && showSma1 ? [point.sma1] : []),
-    ...(technicalIndicatorsAvailable && showSma2 ? [point.sma2] : []),
+    ...(plotSma1 ? [point.sma1] : []),
+    ...(plotSma2 ? [point.sma2] : []),
   ]));
   const ratioDomain = getChartDomain([...visibleChartData.map((point) => point.goldSilverRatio), 60, 75]);
   const priceAxisWidth = getChartAxisWidth(priceDomain, locale);
@@ -802,12 +929,18 @@ export default function ChartsPage() {
 
   const formatChartPrice = (price: number) =>
     `${formatChartQuote(price, locale, displayCurrency)}${isMetal ? '/g' : ''}`;
+  const hasHistoricalClose = !loading && history.length > 0 && Number.isFinite(latestPrice) && latestPrice > 0;
   const selectedPriceLabel = currentQuote ? formatChartPrice(currentQuote.price)
-    : !loading && history.length > 0 ? formatChartPrice(latestPrice)
-      : quoteLoading ? quoteCopy.loading : '—';
-  const selectedQuoteLabel = currentQuote ? currentQuote.demo ? quoteCopy.demo : quoteCopy.latest
-    : !loading && history.length > 0 ? quoteCopy.close : quoteLoading ? quoteCopy.loading : quoteCopy.unavailable;
-  const selectedQuoteTime = currentQuote?.observedAt ?? (!loading && history.length ? lastUpdated : null);
+    : hasHistoricalClose ? formatChartPrice(latestPrice) : '—';
+  const historicalCloseLabel = result?.demo ? DEMO_CLOSE_LABEL[language] : t('Last historical close');
+  const selectedQuoteLabel = currentQuote ? currentQuote.demo ? t('Illustrative demo quote') : t('Latest available quote')
+    : hasHistoricalClose ? historicalCloseLabel : null;
+  const selectedQuoteSource = currentQuote?.source ?? (hasHistoricalClose ? historySource : null);
+  const selectedQuoteTime = currentQuote?.observedAt ?? (hasHistoricalClose ? lastUpdated : null);
+  const quoteStatus = quoteLoading ? t('Loading quote…')
+    : activeQuote?.rateLimited || retryAt !== null ? t('Quote requests are temporarily limited.')
+      : !currentQuote ? t('Quote unavailable')
+        : activeQuote?.failed ? t('Quote refresh failed.') : null;
 
   return (
     <AppShell>
@@ -834,7 +967,7 @@ export default function ChartsPage() {
           <div className="callout error">
             <AlertTriangle size={18} style={{ color: 'var(--red)', flexShrink: 0, marginTop: 2 }} />
             <div>
-              <strong>{t('History unavailable.')}</strong> {error}
+              <strong>{t('History unavailable.')}</strong>
             </div>
           </div>
         )}
@@ -1000,17 +1133,27 @@ export default function ChartsPage() {
 
               <div className="chart-selected-price-row">
                 <div className="security-profile-price"><bdi dir="ltr">{selectedPriceLabel}</bdi></div>
-                <button type="button" className="btn btn-secondary btn-sm" aria-label={quoteCopy.refresh} title={quoteCopy.refresh} style={{ minWidth: 44, minHeight: 44 }}
-                  disabled={quoteLoading} onClick={() => setQuoteRevision(value => value + 1)}>
+                <button type="button" className="btn btn-secondary btn-sm" aria-label={t('Refresh quote')} title={t('Refresh quote')} style={{ minWidth: 44, minHeight: 44 }}
+                  disabled={quoteLoading || retryAt !== null} onClick={() => setQuoteRevision(value => value + 1)}>
                   <RefreshCw size={16} aria-hidden="true" />
                 </button>
 
               </div>
 
               <div className="panel-subtitle" aria-live="polite">
-                <span>{selectedQuoteLabel}</span>
-                {currentQuote && <> · <bdi dir="ltr">{currentQuote.source}</bdi></>}
-                {selectedQuoteTime && <> · {quoteCopy.asOf} {formatTooltipLabel(selectedQuoteTime, selectedQuoteTime.length > 10 ? '1h' : '1d', language)}</>}
+                {selectedQuoteLabel && (
+                  <div>
+                    <span>{selectedQuoteLabel}</span> · <bdi dir="ltr">{displayCurrency.toUpperCase()}</bdi>
+                    {selectedQuoteSource && <> · <bdi dir="ltr">{selectedQuoteSource}</bdi></>}
+                    {selectedQuoteTime && <> · {t('As of')} {formatTooltipLabel(selectedQuoteTime, selectedQuoteTime.length > 10 ? '1h' : '1d', language)}</>}
+                  </div>
+                )}
+                {quoteStatus && <div>{quoteStatus}</div>}
+                {retryAt !== null && (
+                  <div>{t('Retry available at')} <time dateTime={new Date(retryAt).toISOString()}>
+                    {formatTooltipLabel(new Date(retryAt).toISOString(), '1h', language, true)}
+                  </time></div>
+                )}
               </div>
               <details className="chart-profile-details" open={isMobileViewport !== true}>
                 <summary>{copy.details}</summary>
@@ -1119,7 +1262,7 @@ export default function ChartsPage() {
             tabIndex={0}
             role="group"
             aria-label={`${t('Price')} · ${selectedAsset?.name ?? asset}`}
-            aria-describedby={history.length > 0 ? 'chart-pan-help' : undefined}
+            aria-describedby={canPan ? 'chart-pan-help' : undefined}
             aria-busy={loading}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
@@ -1187,6 +1330,9 @@ export default function ChartsPage() {
                 <Tooltip
                   contentStyle={{
                     background: 'var(--bg-secondary)',
+                    maxWidth: Math.min(320, priceChartSize.width * 0.85),
+                    whiteSpace: 'normal',
+                    overflowWrap: 'anywhere',
                     border: '1px solid var(--border)',
                     borderRadius: 14,
                     color: 'var(--text-primary)',
@@ -1208,7 +1354,7 @@ export default function ChartsPage() {
                   }}
                   labelFormatter={(val) => formatTooltipLabel(val, fetchInterval, language)}
                 />
-                <Legend wrapperStyle={{ color: 'var(--text-secondary)' }} />
+                {legendElement && <Legend portal={legendElement} />}
                 {showGoldSilverRatio && (
                   <>
                     <ReferenceLine yAxisId="ratio" y={60} stroke="var(--chart-threshold-error)" strokeDasharray="5 5" />
@@ -1216,11 +1362,13 @@ export default function ChartsPage() {
                   </>
                 )}
                 <Area type="monotone" dataKey="close" name={t('Price')} stroke="var(--series-market)" fill="url(#priceFill)" strokeWidth={2.4} dot={visibleHistory.length === 1 ? { r: 4 } : false} isAnimationActive={!isDragging && !reducedMotion} />
-                {technicalIndicatorsAvailable && showSma1 && (
-                  <Line type="monotone" dataKey="sma1" name={`SMA ${sma1}`} stroke="var(--series-etfs)" strokeWidth={2} dot={false} isAnimationActive={!isDragging && !reducedMotion} />
+                {plotSma1 && (
+                  <Line type="monotone" dataKey="sma1" name={`SMA ${sma1}`} stroke="var(--series-etfs)" strokeWidth={2}
+                    dot={visibleSmaCounts.first === 1 ? { r: 3, fill: 'var(--series-etfs)' } : false} isAnimationActive={!isDragging && !reducedMotion} />
                 )}
-                {technicalIndicatorsAvailable && showSma2 && (
-                  <Line type="monotone" dataKey="sma2" name={`SMA ${sma2}`} stroke="var(--series-crypto)" strokeWidth={2} dot={false} isAnimationActive={!isDragging && !reducedMotion} />
+                {plotSma2 && (
+                  <Line type="monotone" dataKey="sma2" name={`SMA ${sma2}`} stroke="var(--series-crypto)" strokeWidth={2}
+                    dot={visibleSmaCounts.second === 1 ? { r: 3, fill: 'var(--series-crypto)' } : false} isAnimationActive={!isDragging && !reducedMotion} />
                 )}
                 {showGoldSilverRatio && (
                   <Line
@@ -1240,17 +1388,34 @@ export default function ChartsPage() {
               <div className="skeleton-pulse" style={{ width: '100%', height: '100%', borderRadius: 18 }} />
             )}
           </div>
-
-
-
-            {history.length > 0 && <>
-            <div className="chart-toolbar-row chart-pan-controls" role="group" aria-label={copy.pan} style={{ flexWrap: 'wrap', gap: 8 }}>
-              <button type="button" className="btn btn-secondary btn-sm" style={{ minHeight: 44 }} disabled={!canPan || currentEndMs <= panBounds.minEnd} onClick={() => shiftWindow(-1)}>{copy.previous}</button>
-              <button type="button" className="btn btn-secondary btn-sm" style={{ minHeight: 44 }} disabled={!canPan || currentEndMs >= panBounds.maxEnd} onClick={() => shiftWindow(1)}>{copy.next}</button>
-              <button type="button" className="btn btn-secondary btn-sm" style={{ minHeight: 44 }} disabled={!canPan || currentEndMs >= panBounds.maxEnd} onClick={() => setChartEnd(panBounds.maxEnd)}>{copy.latest}</button>
+          {visibleChartData.length > 0 && (
+            <div className="asset-chart-legend" ref={setLegendElement} role="group" aria-label={copy.legend} />
+          )}
+          {smaCoverage.length > 0 && (
+            <div className="panel-subtitle" aria-live="polite">
+              {smaCoverage.map(({ id, period, values }) => (
+                <p key={id}>
+                  <bdi dir="ltr">{`SMA ${period}`}</bdi>{' · '}
+                  {values > 0
+                    ? smaCoverageCopy.warmup(period.toLocaleString(locale))
+                    : history.length < period
+                      ? smaCoverageCopy.insufficient(history.length.toLocaleString(locale), period.toLocaleString(locale))
+                      : smaCoverageCopy.outsideWindow}
+                </p>
+              ))}
             </div>
-            <p id="chart-pan-help" style={{ fontSize: 12, color: 'var(--text-muted)' }}>{copy.keys}</p>
-            </>}
+          )}
+
+          {canPan && (
+            <>
+              <div className="chart-toolbar-row chart-pan-controls" role="group" aria-label={copy.pan} style={{ flexWrap: 'wrap', gap: 8 }}>
+                <button type="button" className="btn btn-secondary btn-sm" style={{ minHeight: 44 }} disabled={currentEndMs <= panBounds.minEnd} onClick={() => shiftWindow(-1)}>{copy.previous}</button>
+                <button type="button" className="btn btn-secondary btn-sm" style={{ minHeight: 44 }} disabled={currentEndMs >= panBounds.maxEnd} onClick={() => shiftWindow(1)}>{copy.next}</button>
+                <button type="button" className="btn btn-secondary btn-sm" style={{ minHeight: 44 }} disabled={currentEndMs >= panBounds.maxEnd} onClick={() => setChartEnd(panBounds.maxEnd)}>{copy.latest}</button>
+              </div>
+              <p id="chart-pan-help" style={{ fontSize: 12, color: 'var(--text-muted)' }}>{copy.keys}</p>
+            </>
+          )}
 
               <details className="chart-indicator-disclosure" open={isMobileViewport !== true}>
                 <summary>{copy.indicators}</summary>

@@ -24,6 +24,7 @@ interface DialogProps {
   contentClassName?: string;
   contentStyle?: CSSProperties;
   initialFocusRef?: React.RefObject<HTMLElement | null>;
+  returnFocusRef?: React.RefObject<HTMLElement | null>;
 }
 
 export default function Dialog({
@@ -39,6 +40,7 @@ export default function Dialog({
   contentClassName = 'account-create-modal',
   contentStyle,
   initialFocusRef,
+  returnFocusRef,
 }: DialogProps) {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
@@ -63,9 +65,11 @@ export default function Dialog({
     return () => {
       window.cancelAnimationFrame(rafId);
       document.body.style.overflow = previousOverflow;
-      previouslyFocusedRef.current?.focus?.();
+      const previous = previouslyFocusedRef.current;
+      if (previous?.isConnected && previous !== document.body) previous.focus();
+      else returnFocusRef?.current?.focus();
     };
-  }, [open, initialFocusRef]);
+  }, [open, initialFocusRef, returnFocusRef]);
 
   useEffect(() => {
     if (!open) return;

@@ -1,6 +1,6 @@
 import type { QuoteCurrency } from '@/lib/config/supported-assets';
 import { fetchFinancialData } from '@/lib/financial-data/client';
-import type { CurrentPriceSnapshot } from '@/lib/financial-data/quotes/current-quote-service';
+import type { CurrentPriceSnapshot, CurrentQuoteIssue } from '@/lib/financial-data/quotes/current-quote-service';
 
 const MAX_SYMBOLS_PER_REQUEST = 25;
 const MAX_SYMBOLS_PER_BATCH_RUN = 250;
@@ -12,6 +12,9 @@ export interface CurrentQuoteBatchResult {
   timestamp: string | null;
   failedSymbols: string[];
   refreshPolicy: CurrentQuoteRefreshPolicy;
+  issues?: Record<string, CurrentQuoteIssue['code']>;
+  /** Earliest time to retry after an HTTP rate limit, in Unix milliseconds. */
+  retryAt?: number;
 }
 
 export type CurrentQuoteRefreshPolicy =
@@ -137,11 +140,37 @@ function isDisplayableCurrentQuote(value: unknown): value is CurrentPriceSnapsho
     return true;
   }
 
-  return priceField.status === 'available'
-    && (
-      priceField.quality === 'demo'
-      || priceField.freshness === 'fresh'
-    );
+  if (priceField.status !== 'available') return false;
+  if (priceField.quality === 'demo') return true;
+  if (priceField.freshness !== 'fresh') return false;
+  const deadline = currentQuoteFreshUntil(snapshot);
+  return deadline === null || deadline > Date.now();
+}
+
+/** A response without a proven deadline can be displayed once, but cannot survive a failed refresh. */
+export function currentQuoteFreshUntil(snapshot: Partial<CurrentPriceSnapshot>): number | null {
+  const field = snapshot.fields?.price;
+  if (field?.status !== 'available') return null;
+  if (field.quality === 'demo') return Number.POSITIVE_INFINITY;
+  const deadline = snapshot.freshUntil;
+  return field.freshness === 'fresh'
+    && typeof deadline === 'number' && Number.isSafeInteger(deadline) && deadline > 0 && deadline <= 8.64e15
+    ? deadline
+    : null;
+}
+
+function quoteIssueCode(value: unknown): value is CurrentQuoteIssue['code'] {
+  return value === 'provider_unavailable' || value === 'fx_unavailable' || value === 'rate_limited';
+}
+
+function parseRetryAfter(header: string | null, now: number): number | undefined {
+  if (!header) return undefined;
+  const value = header.trim();
+  const isDelay = /^\d+$/.test(value);
+  const deadline = isDelay ? now + Number(value) * 1_000 : Date.parse(value);
+  if (!Number.isSafeInteger(deadline) || deadline <= now || deadline > 8.64e15) return undefined;
+  if (!isDelay && new Date(deadline).toUTCString() !== value) return undefined;
+  return deadline;
 }
 
 export async function fetchCurrentQuoteBatches(
@@ -163,12 +192,21 @@ export async function fetchCurrentQuoteBatches(
 
   const prices: Record<string, CurrentPriceSnapshot> = {};
   const failedSymbols: string[] = [];
+  const issues: NonNullable<CurrentQuoteBatchResult['issues']> = {};
   let timestamp: string | null = null;
   let partialPayload = false;
   let refreshPolicy: CurrentQuoteRefreshPolicy = 'unknown';
+  let retryAt: number | undefined;
+  let rateLimited = false;
 
   for (const batch of chunks(normalized, MAX_SYMBOLS_PER_REQUEST)) {
     try {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+      if (rateLimited) {
+        failedSymbols.push(...batch);
+        for (const symbol of batch) issues[symbol] = 'rate_limited';
+        continue;
+      }
       const parameters = new URLSearchParams({
         symbols: batch.join(','),
         currency,
@@ -180,13 +218,23 @@ export async function fetchCurrentQuoteBatches(
           signal,
         },
       );
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+      if (response.status === 429) {
+        rateLimited = true;
+        retryAt = parseRetryAfter(response.headers.get('Retry-After'), Date.now());
+        failedSymbols.push(...batch);
+        for (const symbol of batch) issues[symbol] = 'rate_limited';
+        continue;
+      }
       if (!response.ok) throw new Error('Current quote batch unavailable');
       const payload = await response.json() as {
         status?: unknown;
         prices?: unknown;
+        issues?: unknown;
         timestamp?: unknown;
         refreshPolicy?: unknown;
       };
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
       if (!payload.prices || typeof payload.prices !== 'object') {
         throw new Error('Invalid current quote response');
       }
@@ -197,6 +245,14 @@ export async function fetchCurrentQuoteBatches(
           prices[symbol] = candidate;
         } else {
           failedSymbols.push(symbol);
+        }
+      }
+      if (Array.isArray(payload.issues)) {
+        for (const issue of payload.issues) {
+          const symbol = issue?.symbol;
+          const code = issue?.code;
+          if (typeof symbol !== 'string' || !batch.includes(symbol) || prices[symbol] || !quoteIssueCode(code)) continue;
+          if (!issues[symbol] || code === 'rate_limited') issues[symbol] = code;
         }
       }
       if (payload.status === 'partial' || payload.status === 'unavailable') {
@@ -226,5 +282,7 @@ export async function fetchCurrentQuoteBatches(
     timestamp,
     failedSymbols,
     refreshPolicy,
+    ...(Object.keys(issues).length > 0 && { issues }),
+    ...(retryAt !== undefined && { retryAt }),
   };
 }

@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import AppShell from '@/components/layout/app-shell';
 import GlobalAddModal from '@/components/layout/global-add-modal';
+import { TradeEntryActions, useTradeEntry } from '@/components/layout/trade-entry-actions';
 import Dialog from '@/components/ui/dialog';
 import { isHistoryUsableForDerivedPerformance } from '@/lib/financial-data/history/trust';
 import {
@@ -238,6 +239,7 @@ export default function AccountDetailPage() {
   const params = useParams<{ venue: string }>();
   const venueParam = Array.isArray(params?.venue) ? params.venue[0] : params?.venue;
   const venue = decodeURIComponent(venueParam ?? '');
+  const tradeEntry = useTradeEntry();
   const [transactions, setTransactions] = useState<AppTransaction[]>([]);
   const [manualAccounts, setManualAccounts] = useState<ReturnType<typeof getAllManualAccounts>>([]);
   const [hiddenAccountVenues, setHiddenAccountVenues] = useState<string[]>([]);
@@ -272,6 +274,15 @@ export default function AccountDetailPage() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [txSortColumn, setTxSortColumn] = useState<string>('date');
   const [txSortDirection, setTxSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  useEffect(() => {
+    setIsAddMenuOpen(false);
+    setIsGlobalAddModalOpen(false);
+    setEditingTransaction(null);
+    setIsImportModalOpen(false);
+    setIsRenameModalOpen(false);
+    setIsDeleteModalOpen(false);
+  }, [tradeEntry.workspace, venue]);
   const addMenuRef = useRef<HTMLDivElement | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -923,7 +934,7 @@ export default function AccountDetailPage() {
             <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <WalletCards size={24} />
               {accountMeta.label}
-              {manualAccounts.some(a => a.venue === venue) && (
+              {tradeEntry.canEdit && manualAccount && (
                 <button
                   type="button"
                   className="btn btn-icon btn-sm"
@@ -951,10 +962,13 @@ export default function AccountDetailPage() {
           </div>
 
           <div className="page-header-actions">
-            <div className="account-add-menu account-detail-add-menu" ref={addMenuRef}>
+            {tradeEntry.canEdit && !isCashAccount && !accountMeta.archivedAt &&
+              <TradeEntryActions launchTrade={tradeEntry.launchTrade} context={{ venue }} />}
+            {tradeEntry.isDemo && <span className="status-pill neutral">{t('Demo snapshot is read-only.')}</span>}
+            {tradeEntry.canEdit && <div className="account-add-menu account-detail-add-menu" ref={addMenuRef}>
               <button
                 type="button"
-                className="btn btn-primary"
+                className={isCashAccount ? 'btn btn-primary' : 'btn btn-secondary'}
                 onClick={() => setIsAddMenuOpen((current) => !current)}
                 aria-haspopup="menu"
                 aria-expanded={isAddMenuOpen}
@@ -981,12 +995,12 @@ export default function AccountDetailPage() {
                   </button>
                 </div>
               ) : null}
-            </div>
+            </div>}
 
             <Link href="/transactions" className="btn btn-secondary">
               {t('Open Ledger')}
             </Link>
-            {manualAccount ? (
+            {tradeEntry.canEdit && manualAccount ? (
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -1716,7 +1730,7 @@ export default function AccountDetailPage() {
                                 </div>
                               </td>
                               <td style={{ width: 60, textAlign: 'right' }}>
-                                {transaction.source === 'manual' ? (
+                                {tradeEntry.canEdit && transaction.source === 'manual' ? (
                                   <button
                                     className="btn btn-secondary btn-sm"
                                     onClick={() => setEditingTransaction(transaction)}
@@ -1803,7 +1817,7 @@ export default function AccountDetailPage() {
         )}
       </div>
 
-      {isImportModalOpen ? (
+      {tradeEntry.canEdit && isImportModalOpen ? (
         <Dialog open onClose={closeImportModal} labelledBy="account-import-title">
             <div className="account-create-header">
               <div>
@@ -1876,13 +1890,14 @@ export default function AccountDetailPage() {
             </div>
         </Dialog>
       ) : null}
-      {isGlobalAddModalOpen ? (
+      {tradeEntry.dialog}
+      {tradeEntry.canEdit && isGlobalAddModalOpen ? (
         <GlobalAddModal
           onClose={() => setIsGlobalAddModalOpen(false)}
           initialVenue={venue}
         />
       ) : null}
-      {isRenameModalOpen ? (
+      {tradeEntry.canEdit && isRenameModalOpen ? (
         <Dialog open onClose={() => setIsRenameModalOpen(false)} labelledBy="account-rename-title">
           <div className="account-create-header">
             <div>
@@ -1979,7 +1994,7 @@ export default function AccountDetailPage() {
           </div>
         </Dialog>
       ) : null}
-      {isDeleteModalOpen && manualAccount ? (
+      {tradeEntry.canEdit && isDeleteModalOpen && manualAccount ? (
         <Dialog open onClose={() => setIsDeleteModalOpen(false)} labelledBy="account-delete-title">
           <div className="account-create-header">
             <div>
@@ -2093,7 +2108,7 @@ export default function AccountDetailPage() {
           </div>
         </Dialog>
       ) : null}
-      {editingTransaction && (
+      {tradeEntry.canEdit && editingTransaction && (
         <GlobalAddModal
           onClose={() => setEditingTransaction(null)}
           editTransaction={editingTransaction}

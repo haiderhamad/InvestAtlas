@@ -2,6 +2,7 @@ import { getFirebaseApiIdentity } from '@/lib/auth/firebase-api-auth';
 import {
   clearTiingoBrowserCredential, loadTiingoBrowserDailySeries,
   setTiingoBrowserCredential, testTiingoBrowserCredential,
+  TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT, TIINGO_BROWSER_PROVIDER_CHANGE_EVENT,
 } from '@/lib/financial-data/providers/tiingo-browser';
 import { fetchFinancialData } from '@/lib/financial-data/client';
 import { LOCAL_PERSONAL_PROVIDER_OWNER_ID as LOCAL_ID } from '@/lib/runtime/local-personal-provider';
@@ -75,6 +76,20 @@ describe('Local Personal Tiingo browser integration without Firebase', () => {
     expect(options).toMatchObject({
       cache: 'no-store', redirect: 'error', referrerPolicy: 'no-referrer',
     });
+  });
+
+  it('distinguishes credential invalidation from quote budget updates', async () => {
+    const dispatch = jest.mocked(window.dispatchEvent);
+    dispatch.mockClear();
+    setTiingoBrowserCredential(LOCAL_ID, 'SYNTHETIC_LOCAL_ONLY');
+    await loadTiingoBrowserDailySeries(LOCAL_ID, 'AAPL');
+    clearTiingoBrowserCredential();
+    const events = dispatch.mock.calls.map(([event]) => event.type);
+    expect(events).toEqual([
+      TIINGO_BROWSER_PROVIDER_CHANGE_EVENT, TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT,
+      TIINGO_BROWSER_PROVIDER_CHANGE_EVENT,
+      TIINGO_BROWSER_PROVIDER_CHANGE_EVENT, TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT,
+    ]);
   });
 
   it('uses the local personal market-data handler, not the public backend', async () => {

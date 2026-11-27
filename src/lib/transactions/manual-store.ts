@@ -447,10 +447,13 @@ export function updateManualTransaction(
 ): AppTransaction[] | Promise<AppTransaction[]> {
   assertAnonymousWorkspaceWritable();
   const stamped = normalizeTransaction({ ...updated, updatedAt: new Date().toISOString() });
-  assertTransactionsHaveRequiredCash(
-    getAllTransactions().filter((transaction) => transaction.id !== updated.id),
-    [stamped],
-  );
+  const transactions = getAllTransactions();
+  if ((stamped.type === 'buy' || stamped.type === 'sell') && transactions.some(row => row.id === updated.id)) {
+    // A trade edit is persisted in place. Use the same order for trades tied at this instant.
+    assertTransactionsHaveRequiredCash(transactions.map(row => row.id === updated.id ? stamped : row), []);
+  } else {
+    assertTransactionsHaveRequiredCash(transactions.filter(row => row.id !== updated.id), [stamped]);
+  }
   
   if (currentUserId) {
     assertCloudDataReady('transactions');

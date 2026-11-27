@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { formatChartAxis, getChartAxisWidth, getChartDomain } from '@/lib/charts/scale';
+import { PORTFOLIO_CHART_MARGIN, PortfolioValueAxis } from '@/components/charts/portfolio-value-axis';
+import { getChartDomain } from '@/lib/charts/scale';
 import {
   Area,
   CartesianGrid,
@@ -10,7 +11,6 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis,
 } from 'recharts';
 import { useAppTranslation } from '@/lib/i18n/use-app-translation';
 import { useDisplayCurrencyPreference } from '@/lib/preferences/display-currency';
@@ -21,38 +21,6 @@ interface DashboardChartProps {
 
 const formatPct = (value: number, locale: string = 'de-DE') => `${value >= 0 ? '+' : ''}${value.toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 
-const RenderCustomAxisTick = (props: any) => {
-  const { x, y, payload, isRtl, domain, locale } = props;
-  const val = Number(payload.value);
-  const formattedValue = formatChartAxis(val, domain, locale);
-
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text
-        x={isRtl ? 10 : -10}
-        y={4}
-        textAnchor={isRtl ? 'start' : 'end'}
-        fill="none"
-        stroke="var(--bg-card)"
-        strokeWidth={2}
-        fontSize={11}
-        fontWeight="bold"
-      >
-        {formattedValue}
-      </text>
-      <text
-        x={isRtl ? 10 : -10}
-        y={4}
-        textAnchor={isRtl ? 'start' : 'end'}
-        fill="var(--text-muted)"
-        fontSize={11}
-      >
-        {formattedValue}
-      </text>
-    </g>
-  );
-};
-
 export default function DashboardChart({ data }: DashboardChartProps) {
   const { t, language } = useAppTranslation();
   const { formatMoney } = useDisplayCurrencyPreference();
@@ -62,7 +30,7 @@ export default function DashboardChart({ data }: DashboardChartProps) {
 
   return (
     <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-      <ComposedChart data={data} margin={{ top: 0, right: 0, left: -4, bottom: 0 }}>
+      <ComposedChart data={data} margin={PORTFOLIO_CHART_MARGIN}>
         <defs>
           <linearGradient id="dashboardPortfolioFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="var(--series-market)" stopOpacity={0.16} />
@@ -80,15 +48,7 @@ export default function DashboardChart({ data }: DashboardChartProps) {
           minTickGap={60}
           padding={{ left: 0, right: 0 }}
         />
-        <YAxis
-          yAxisId="value"
-          tickLine={false}
-          axisLine={false}
-          tick={<RenderCustomAxisTick isRtl={language === 'ar'} domain={domain} locale={numberLocale} />}
-          orientation={language === 'ar' ? 'right' : 'left'}
-          width={getChartAxisWidth(domain, numberLocale)}
-          domain={domain}
-        />
+        <PortfolioValueAxis yAxisId="value" domain={domain} locale={numberLocale} isRtl={language === 'ar'} />
         <Tooltip
           content={({ active, payload, label }) => {
             if (!active || !payload?.length) {

@@ -37,6 +37,8 @@ const MAX_PROVIDER_CLOCK_SKEW_MS = 5 * 60_000;
 
 export interface CurrentPriceSnapshot {
   price: number;
+  /** Expiry in Unix milliseconds when the source can prove the remaining freshness. */
+  freshUntil?: number;
   change24h: number | null;
   volume24h: number | null;
   marketCap: number | null;
@@ -284,6 +286,7 @@ function buildCoinGeckoSnapshot(
 
   return {
     price,
+    freshUntil: observedAtMs + FRESH_CRYPTO_QUOTE_AGE_MS,
     change24h: change,
     volume24h: volume,
     marketCap,

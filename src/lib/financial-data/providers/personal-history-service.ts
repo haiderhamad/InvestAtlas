@@ -18,7 +18,7 @@ import {
 import { loadPublicExchangeSeries } from './public-exchange-browser';
 import { readSourceSelection, SOURCE_CHANGE } from './source-selection';
 import {
-  hasTiingoBrowserCredential, loadTiingoBrowserDailySeries, supportsTiingoBrowserAsset, TIINGO_BROWSER_PROVIDER_CHANGE_EVENT,
+  hasTiingoBrowserCredential, loadTiingoBrowserDailySeries, supportsTiingoBrowserAsset, TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT,
 } from './tiingo-browser';
 import { activeMarketOwner, hasTwelve, loadTwelve, loadTwelveDemo, supportsTwelve } from './twelve-personal';
 import { loadYahooPersonalDailySeries } from './yahoo-personal';
@@ -87,7 +87,7 @@ function bindLifecycle(): void {
   if (typeof window === 'undefined' || boundWindow === window) return;
   boundWindow = window;
   for (const event of [SOURCE_CHANGE, PUBLIC_SOURCE_CONSENT_EVENT, EODHD_CHANGE_EVENT,
-    TIINGO_BROWSER_PROVIDER_CHANGE_EVENT,
+    TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT,
     ANONYMOUS_WORKSPACE_MODE_EVENT, USER_ASSETS_CHANGE_EVENT]) window.addEventListener(event, invalidate);
   window.addEventListener(BROWSER_WORKSPACE_CHANGE_EVENT, () => {
     invalidate(); warmed.clear(); warmStopped = false;

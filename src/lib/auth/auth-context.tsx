@@ -6,7 +6,7 @@ import {
   markBrowserWorkspacePending,
   resolveBrowserWorkspace,
 } from '@/lib/storage/workspace-storage';
-import { setCloudDataWorkspace } from '@/lib/storage/cloud-data-status';
+import { reportCloudDataUnavailable, setCloudDataWorkspace } from '@/lib/storage/cloud-data-status';
 import { INVESTATLAS_DEPLOYMENT_MODE } from '@/lib/runtime/deployment-mode';
 import { clearTwelve, reconcileTwelve } from '@/lib/financial-data/providers/twelve-personal';
 import { clearPublicSourceConsent, reconcilePublicSourceConsent } from '@/lib/financial-data/providers/public-source-consent';
@@ -81,6 +81,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       reconcileMarketData(nextUserId);
       reconcileEodhd(nextUserId);
       setCloudDataWorkspace(nextUserId);
+      if (nextUserId) {
+        // Every signed-in route waits for these stores' Firebase snapshots, including direct links.
+        void import('@/lib/transactions/manual-store')
+          .catch(error => reportCloudDataUnavailable('transactions', nextUserId, error));
+        void import('@/lib/accounts/manual-accounts-store')
+          .catch(error => reportCloudDataUnavailable('accounts', nextUserId, error));
+        void import('@/lib/config/asset-risk-store')
+          .catch(error => reportCloudDataUnavailable('asset_risks', nextUserId, error));
+      }
       resolveBrowserWorkspace(nextUserId);
       setSession(nextSession);
       setUser(nextSession?.user ?? null);

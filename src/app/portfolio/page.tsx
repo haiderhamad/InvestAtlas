@@ -1,13 +1,16 @@
 'use client';
 
-import { formatChartAxis, getChartAxisWidth, getChartDomain } from '@/lib/charts/scale';
+import { PORTFOLIO_CHART_MARGIN, PortfolioValueAxis } from '@/components/charts/portfolio-value-axis';
 import AppShell from '@/components/layout/app-shell';
+import { TradeEntryActions, useTradeEntry } from '@/components/layout/trade-entry-actions';
 import Link from 'next/link';
 import PortfolioDonut, { assetColor } from '@/components/dashboard/portfolio-donut';
+import { publicMarketCopy } from '@/components/settings/public-market-consent-copy';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DEMO_PORTFOLIO_GROWTH } from '@/lib/demo/investment-data';
 import { getDemoSnapshotAsOfDay } from '@/lib/demo/showcase-snapshot';
-import { fetchFinancialData } from '@/lib/financial-data/client';
+import { formatChartQuote, getChartDomain } from '@/lib/charts/scale';
+import { chartCurrentQuote } from '@/lib/charts/current-quote';
 import {
   buildHoldingLedgerInsights,
   buildPortfolioMonitorSeries,
@@ -45,7 +48,7 @@ import {
   HIDDEN_ACCOUNTS_EVENT,
   readHiddenAccountVenues,
 } from '@/lib/accounts/account-visibility-store';
-import { deriveHoldingsFromTransactions, type DerivedHolding } from '@/lib/transactions/holdings-engine';
+import { deriveHoldingsFromTransactions } from '@/lib/transactions/holdings-engine';
 import { getNegativeCashBalances } from '@/lib/transactions/cash-balances';
 import {
   getAllTransactions,
@@ -58,10 +61,11 @@ import {
   getUnavailableValuationSymbols,
   summarizeCurrentValuationCoverage,
   type CurrentFxRatesToEur,
-  type CurrentValuationPrices,
 } from '@/lib/portfolio/current-valuation';
-import { fetchCurrentQuoteBatches } from '@/lib/financial-data/quotes/client';
-import { isHistoryUsableForDerivedPerformance } from '@/lib/financial-data/history/trust';
+import { usePortfolioMarketQuotes } from '@/lib/portfolio/market-quotes';
+import { readPublicSourceConsent } from '@/lib/financial-data/providers/public-source-consent';
+import { INVESTATLAS_DEPLOYMENT_MODE } from '@/lib/runtime/deployment-mode';
+import { LOCAL_PERSONAL_PROVIDER_OWNER_ID } from '@/lib/runtime/local-personal-provider';
 import { TROY_OUNCE_GRAMS } from '@/lib/metals/metal-purity';
 import { useAppTranslation } from '@/lib/i18n/use-app-translation';
 import {
@@ -76,7 +80,7 @@ import {
   X,
 } from 'lucide-react';
 import { AssetIcon } from '@/components/ui/asset-icon';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -87,55 +91,11 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis,
 } from 'recharts';
-
-type HoldingView = ReturnType<typeof buildCurrentHoldingValuations>[number];
-
-type CurrentPriceSnapshot = CurrentValuationPrices;
-
-function buildHoldingSnapshot(
-  baseHoldings: DerivedHolding[],
-  prices?: CurrentPriceSnapshot,
-  fxRatesToEur?: CurrentFxRatesToEur,
-): HoldingView[] {
-  return buildCurrentHoldingValuations(baseHoldings, prices, fxRatesToEur);
-}
-
-const RenderCustomAxisTick = (props: any) => {
-  const { x, y, payload, isRtl, domain, locale } = props;
-  const val = Number(payload.value);
-  const formattedValue = formatChartAxis(val, domain, locale, { suffix: '%' });
-
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text
-        x={isRtl ? 10 : -10}
-        y={4}
-        textAnchor={isRtl ? 'start' : 'end'}
-        fill="none"
-        stroke="var(--bg-card)"
-        strokeWidth={2}
-        fontSize={11}
-        fontWeight="bold"
-      >
-        {formattedValue}
-      </text>
-      <text
-        x={isRtl ? 10 : -10}
-        y={4}
-        textAnchor={isRtl ? 'start' : 'end'}
-        fill="var(--text-muted)"
-        fontSize={11}
-      >
-        {formattedValue}
-      </text>
-    </g>
-  );
-};
 
 export default function PortfolioPage() {
   const { t, language } = useAppTranslation();
+  const tradeEntry = useTradeEntry();
 
   const {
     displayCurrency,
@@ -169,45 +129,24 @@ export default function PortfolioPage() {
   const [taxProfileSettings, setTaxProfileSettings] = useState(DEFAULT_TAX_PROFILE_SETTINGS);
   const baseHoldings = useMemo(() => deriveHoldingsFromTransactions(portfolioTransactions), [portfolioTransactions]);
 
-  const [historicalPrices, setHistoricalPrices] = useState<Record<string, Array<{ date: string, close: number }>>>({});
-
-  useEffect(() => {
-    const fetchHistoricalPrices = async () => {
-      const symbols = [...new Set(portfolioTransactions.map(tx => tx.asset))];
-      const newHistoricalPrices = { ...historicalPrices };
-      let changed = false;
-
-      for (const symbol of symbols) {
-        if (!newHistoricalPrices[symbol]) {
-          try {
-            const res = await fetchFinancialData(`/api/prices/history?symbol=${symbol}`);
-            const data = await res.json();
-            if (res.ok && isHistoryUsableForDerivedPerformance(data)) {
-              newHistoricalPrices[symbol] = data.prices;
-              changed = true;
-            }
-          } catch (error) {
-            console.error(`Failed to fetch history for ${symbol}:`, error);
-          }
-        }
-      }
-
-      if (changed) {
-        setHistoricalPrices(newHistoricalPrices);
-      }
-    };
-
-    if (portfolioTransactions.length > 0) {
-      fetchHistoricalPrices();
+  const quoteSymbols = useMemo(() => {
+    const priceable = baseHoldings.filter(holding => holding.assetClass !== 'cash');
+    const symbols = new Set(priceable.map(holding => holding.symbol));
+    if (priceable.some(holding => holding.assetClass === 'metal')) {
+      symbols.add('GOLD');
+      symbols.add('SILVER');
     }
-  }, [portfolioTransactions]);
-
-  const [holdings, setHoldings] = useState<HoldingView[]>([]);
-  const [currentPrices, setCurrentPrices] = useState<CurrentPriceSnapshot>({});
-  const [syncing, setSyncing] = useState(false);
-  const [lastSync, setLastSync] = useState<string | null>(null);
-  const [isLive, setIsLive] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    return [...symbols].sort().join(',');
+  }, [baseHoldings]);
+  const historySymbols = useMemo(() => [...new Set(portfolioTransactions.flatMap(transaction =>
+    transaction.assetClass === 'cash' ? [] : [transaction.asset],
+  ))].sort().join(','), [portfolioTransactions]);
+  const market = usePortfolioMarketQuotes(tradeEntry.workspace, displayCurrency, quoteSymbols, historySymbols);
+  const { prices: currentPrices, historicalPrices, fetching: syncing } = market;
+  const holdings = useMemo(
+    () => buildCurrentHoldingValuations(baseHoldings, currentPrices, fxRatesToEur),
+    [baseHoldings, currentPrices, fxRatesToEur],
+  );
   const [complianceFilter, setComplianceFilter] = useState<ShariahDecisionStatus | null>(null);
   const [hoveredSymbol, setHoveredSymbol] = useState<string | null>(null);
 
@@ -236,6 +175,8 @@ export default function PortfolioPage() {
     window.addEventListener(HIDDEN_ACCOUNTS_EVENT, syncHiddenAccounts as EventListener);
     window.addEventListener(TAX_PROFILE_STORAGE_EVENT, syncTaxProfile as EventListener);
     window.addEventListener('storage', syncTransactions);
+    window.addEventListener('storage', syncManualAccounts);
+    window.addEventListener('storage', syncHiddenAccounts);
     window.addEventListener('storage', syncTaxProfile);
 
     return () => {
@@ -244,76 +185,11 @@ export default function PortfolioPage() {
       window.removeEventListener(HIDDEN_ACCOUNTS_EVENT, syncHiddenAccounts as EventListener);
       window.removeEventListener(TAX_PROFILE_STORAGE_EVENT, syncTaxProfile as EventListener);
       window.removeEventListener('storage', syncTransactions);
+      window.removeEventListener('storage', syncManualAccounts);
+      window.removeEventListener('storage', syncHiddenAccounts);
       window.removeEventListener('storage', syncTaxProfile);
     };
   }, []);
-
-  const fetchPortfolioSnapshot = useCallback(async () => {
-    setSyncing(true);
-    setError(null);
-
-    try {
-      if (baseHoldings.length === 0) {
-        setHoldings([]);
-        setCurrentPrices({});
-        setLastSync(null);
-        setIsLive(false);
-        return;
-      }
-
-      const priceableHoldings = baseHoldings.filter((holding) => holding.assetClass !== 'cash');
-      if (priceableHoldings.length === 0) {
-        setHoldings(buildHoldingSnapshot(baseHoldings, undefined, fxRatesToEur));
-        setCurrentPrices({});
-        setLastSync(new Date().toISOString());
-        setIsLive(false);
-        return;
-      }
-
-      const symbolsToFetch = new Set(priceableHoldings.map((holding) => holding.symbol));
-      if (priceableHoldings.some((holding) => holding.assetClass === 'metal')) {
-        symbolsToFetch.add('GOLD');
-        symbolsToFetch.add('SILVER');
-      }
-      const data = await fetchCurrentQuoteBatches(
-        Array.from(symbolsToFetch),
-        'eur',
-      );
-      if (data.status === 'unavailable') {
-        throw new Error('Portfolio snapshot failed');
-      }
-
-      const priceSnapshot = (data.prices ?? {}) as CurrentPriceSnapshot;
-      const nextHoldings = buildHoldingSnapshot(baseHoldings, priceSnapshot, fxRatesToEur);
-      const valuationComplete = isCurrentValuationComplete(nextHoldings);
-      setCurrentPrices(priceSnapshot);
-      setHoldings(nextHoldings);
-      setLastSync(data.timestamp);
-      setIsLive(valuationComplete);
-      if (!valuationComplete) {
-        setError('Current market data is unavailable for one or more holdings.');
-      }
-    } catch (fetchError) {
-      setHoldings(buildHoldingSnapshot(baseHoldings, undefined, fxRatesToEur));
-      setCurrentPrices({});
-      setError(fetchError instanceof Error ? fetchError.message : 'Failed to refresh portfolio');
-      setIsLive(false);
-    } finally {
-      setSyncing(false);
-    }
-  }, [baseHoldings, fxRatesToEur]);
-
-  useEffect(() => {
-    setHoldings(
-      baseHoldings.length > 0
-        ? buildHoldingSnapshot(baseHoldings, undefined, fxRatesToEur)
-        : [],
-    );
-  }, [baseHoldings, fxRatesToEur]);
-
-  useEffect(() => {
-    void fetchPortfolioSnapshot();
-  }, [fetchPortfolioSnapshot]);
 
   const taxOverview = useMemo(
     () => calculateInvestmentTaxOverview(portfolioTransactions, taxProfileSettings),
@@ -629,16 +505,64 @@ export default function PortfolioPage() {
     hour12: language !== 'de',
   });
 
-  const syncLabel = lastSync
-    ? new Date(lastSync).toLocaleTimeString(language === 'de' ? 'de-DE' : language === 'ar' ? 'ar-SA' : 'en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: language !== 'de'
-    })
-    : t('Demo snapshot');
-
-  const showSkeleton = syncing && !lastSync && holdings.length === 0;
+  const publicSourceOwner = INVESTATLAS_DEPLOYMENT_MODE === 'private_cloud' && tradeEntry.workspace.startsWith('cloud:')
+    ? tradeEntry.workspace.slice('cloud:'.length)
+    : INVESTATLAS_DEPLOYMENT_MODE === 'local_personal' && tradeEntry.workspace === 'local_workspace'
+      ? LOCAL_PERSONAL_PROVIDER_OWNER_ID
+      : null;
+  const publicSourcesInactive = publicSourceOwner !== null && readPublicSourceConsent(publicSourceOwner).length === 0;
+  const rateLimitedSymbols = Object.entries(market.issues ?? {})
+    .filter(([symbol, code]) => code === 'rate_limited' && quoteSymbols.split(',').includes(symbol))
+    .map(([symbol]) => symbol);
+  const showSkeleton = syncing && holdings.length === 0;
   const emptyPortfolio = !showSkeleton && portfolioTransactions.length === 0;
+  const showQuoteWarning = market.refreshFailed || market.rateLimited
+    || (!syncing && !!quoteSymbols && unavailableHoldingSymbols.length > 0);
+
+  function renderCurrentUnitPrice(asset: typeof holdingsTable[number]) {
+    if (!asset.valuationAvailable) return t('Unavailable');
+    if (asset.assetClass === 'metal') return <bdi dir="ltr">{formatMoney(asset.currentPrice, 2, 2)}{t('/g')}</bdi>;
+    const amount = displayCurrency === 'eur' ? asset.currentPrice
+      : usdToEurRate ? asset.currentPrice / usdToEurRate : null;
+    return amount === null ? t('Unavailable') : <bdi dir="ltr">{formatChartQuote(amount, numberLocale, displayCurrency)}</bdi>;
+  }
+
+  function renderHoldingQuote(asset: typeof holdingsTable[number]) {
+    if (asset.assetClass === 'cash') return null;
+    const metal = asset.assetClass === 'metal';
+    const quote = chartCurrentQuote(currentPrices[asset.symbol], asset.symbol, 'eur', metal);
+    const close = market.historyEntries[asset.symbol]?.close;
+    const historical = !quote && !asset.valuationAvailable ? close : undefined;
+    const source = quote?.source ?? historical?.source;
+    const observedAt = quote?.observedAt ?? historical?.date;
+    const label = quote
+      ? quote.demo ? t('Illustrative demo quote') : t('Latest available quote')
+      : historical
+        ? historical.demo ? t('Illustrative demo quote') : t('Last historical close')
+        : asset.valuationAvailable && tradeEntry.isDemo
+          ? t('Illustrative demo quote')
+          : syncing ? t('Loading quote…') : asset.valuationAvailable ? null : t('Quote unavailable');
+    const valuedInDisplayCurrency = asset.valuationAvailable && (displayCurrency === 'eur' || Boolean(usdToEurRate));
+    const quotePrice = valuedInDisplayCurrency ? null : quote?.price
+      ?? (historical ? historical.close / (metal ? TROY_OUNCE_GRAMS : 1) : null);
+    if (!label) return null;
+    return (
+      <div className="panel-subtitle" style={{ marginTop: 4 }}>
+        <span>{label}</span>
+        {quotePrice !== null && <> · <bdi dir="ltr">{formatChartQuote(quotePrice, numberLocale, 'eur')}{metal ? t('/g') : ''}</bdi></>}
+        {observedAt && (
+          <> · {t('As of')}{' '}
+            <time dateTime={observedAt}>
+              {new Date(observedAt).toLocaleString(numberLocale, observedAt.length === 10
+                ? { dateStyle: 'medium', timeZone: 'UTC' }
+                : { dateStyle: 'medium', timeStyle: 'short' })}
+            </time>
+          </>
+        )}
+        {source && <> · <bdi>{source}</bdi></>}
+      </div>
+    );
+  }
 
   return (
     <AppShell>
@@ -651,7 +575,9 @@ export default function PortfolioPage() {
             </h1>
           </div>
           <div className="page-header-actions">
-            <button className="btn btn-secondary" onClick={fetchPortfolioSnapshot} disabled={syncing}>
+            {tradeEntry.canEdit && <TradeEntryActions launchTrade={tradeEntry.launchTrade} />}
+            {tradeEntry.isDemo && <span className="status-pill neutral">{t('Demo snapshot is read-only.')}</span>}
+            <button type="button" className="btn btn-secondary" onClick={market.refresh} disabled={syncing || market.isCoolingDown}>
               <RefreshCw size={16} className={syncing ? 'loading-spin' : undefined} />
               {syncing ? t('Refreshing…') : t('Refresh portfolio')}
             </button>
@@ -660,7 +586,7 @@ export default function PortfolioPage() {
       </div>
 
       <div className="page-content animate-in">
-        {emptyPortfolio && (
+        {emptyPortfolio && tradeEntry.canEdit && (
           <section className="portfolio-empty-start" aria-labelledby="portfolio-empty-title">
             <div>
               <h2 id="portfolio-empty-title">{t('Your portfolio is empty')}</h2>
@@ -669,17 +595,40 @@ export default function PortfolioPage() {
             <Link href="/accounts" className="btn btn-primary">{t('Set up an account')}</Link>
           </section>
         )}
-        {error && (
-          <div className="callout warn">
+        {showQuoteWarning && (
+          <div className="callout warn" role="status">
             <Activity size={18} style={{ color: 'var(--yellow)', flexShrink: 0, marginTop: 2 }} />
             <div>
-              <strong>{t('Market-data refresh is degraded.')}</strong>{' '}
-              {t('Current values and dependent calculations remain unavailable until every required price is sourced.')}
-              {unavailableHoldingSymbols.length > 0 && (
-                <div style={{ marginTop: 6 }}>
-                  <strong>{t('No usable current EUR valuation for:')}</strong>{' '}
-                  <bdi dir="ltr">{unavailableHoldingSymbols.join(', ')}</bdi>
+              {(market.refreshFailed || market.rateLimited) && (
+                <>
+                  <strong>{t('Market-data refresh is degraded.')}</strong>{' '}
+                  <span>{market.rateLimited ? t('Quote requests are temporarily limited.') : t('Quote refresh failed.')}</span>
+                </>
+              )}
+              {rateLimitedSymbols.length > 0 && <> <bdi dir="ltr">{rateLimitedSymbols.join(', ')}</bdi></>}
+              {market.isCoolingDown && market.retryAt !== undefined && (
+                <div>
+                  {t('Retry available at')}{' '}
+                  <time dateTime={new Date(market.retryAt).toISOString()}>
+                    {new Date(market.retryAt).toLocaleString(numberLocale, { dateStyle: 'short', timeStyle: 'medium' })}
+                  </time>
                 </div>
+              )}
+              {unavailableHoldingSymbols.length > 0 && (
+                <>
+                  <div>{t('Current values and dependent calculations remain unavailable until every required price is sourced.')}</div>
+                  <div style={{ marginTop: 6 }}>
+                    <strong>{t('No usable current EUR valuation for:')}</strong>{' '}
+                    <bdi dir="ltr">{unavailableHoldingSymbols.join(', ')}</bdi>
+                  </div>
+                  {publicSourcesInactive && (
+                    <div style={{ marginTop: 6 }}>
+                      <strong>{publicMarketCopy(language, 'bannerTitle')}</strong>{' '}
+                      {publicMarketCopy(language, 'bannerBody')}{' '}
+                      <Link href="/settings#data-sources">{t('Data Sources')}</Link>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -936,7 +885,7 @@ export default function PortfolioPage() {
 
           {emptyPortfolio ? <p className="panel-subtitle">{t('Portfolio development appears once transactions are available.')}</p> : <div style={{ height: 400 }} dir={language === 'ar' ? 'rtl' : 'ltr'}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <ComposedChart data={chartDisplayData} margin={{ top: 0, right: 0, left: -4, bottom: 0 }}>
+              <ComposedChart data={chartDisplayData} margin={PORTFOLIO_CHART_MARGIN}>
                 <defs>
                   <linearGradient id="portfolioDevelopmentFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--series-market)" stopOpacity={0.28} />
@@ -957,13 +906,11 @@ export default function PortfolioPage() {
                   height={30}
                   padding={{ left: 10, right: 5 }}
                 />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tick={<RenderCustomAxisTick isRtl={language === 'ar'} domain={chartDomain} locale={numberLocale} />}
-                  orientation={language === 'ar' ? 'right' : 'left'}
+                <PortfolioValueAxis
                   domain={chartDomain}
-                  width={getChartAxisWidth(chartDomain, numberLocale, { suffix: '%' })}
+                  locale={numberLocale}
+                  isRtl={language === 'ar'}
+                  suffix="%"
                 />
                 <Tooltip
                   content={({ active, payload, label }) => {
@@ -1319,7 +1266,7 @@ export default function PortfolioPage() {
                   const costBasis = asset.amount * asset.avgCost;
 
                   return (
-                    <tr key={asset.symbol}>
+                    <tr key={`${asset.venue}:${asset.symbol}`}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                           <AssetIcon
@@ -1375,13 +1322,12 @@ export default function PortfolioPage() {
                             ? formatMoney(asset.value)
                             : t('Unavailable')}
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                          {asset.valuationAvailable
-                            ? asset.assetClass === 'metal'
-                              ? <>{t('Price')} <bdi dir="ltr">{formatMoney(asset.currentPrice, 2, 2)}{t('/g')}</bdi></>
-                              : t(`Price ${formatMoney(asset.currentPrice)}`)
-                            : `${t('Price')}: ${t('Unavailable')}`}
-                        </div>
+                        {asset.assetClass !== 'cash' && (
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                            {t('Price')} {renderCurrentUnitPrice(asset)}
+                          </div>
+                        )}
+                        {renderHoldingQuote(asset)}
                         <div style={{ marginTop: 6 }}>
                           <span className={`badge badge-lg ${
                             asset.change24h === null
@@ -1445,6 +1391,11 @@ export default function PortfolioPage() {
                           {t(`Fees ${formatMoney(asset.totalFeesEur)}`)}
                           {asset.holdingDays !== null ? t(` \u00b7 ${asset.holdingDays} days`) : ''}
                         </div>
+                        {tradeEntry.canEdit && asset.assetClass !== 'cash' &&
+                          <div className="mobile-action-row" style={{ marginTop: 8 }}>
+                            <TradeEntryActions compact launchTrade={tradeEntry.launchTrade}
+                              context={{ asset: asset.symbol, assetClass: asset.assetClass, venue: asset.venue }} />
+                          </div>}
                       </td>
                     </tr>
                   );
@@ -1471,7 +1422,7 @@ export default function PortfolioPage() {
               const costBasis = asset.amount * asset.avgCost;
 
               return (
-                <div key={asset.symbol} className="mobile-data-card">
+                <div key={`${asset.venue}:${asset.symbol}`} className="mobile-data-card">
                   <div className="mobile-data-card-header">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <AssetIcon
@@ -1496,13 +1447,11 @@ export default function PortfolioPage() {
                   </div>
 
                   <div className="mobile-data-grid">
-                    {asset.assetClass === 'metal' && (
+                    {asset.assetClass !== 'cash' && (
                       <div className="mobile-data-row">
                         <span className="mobile-data-label">{t('Price')}</span>
                         <strong className="mobile-data-value">
-                          {asset.valuationAvailable
-                            ? <bdi dir="ltr">{formatMoney(asset.currentPrice, 2, 2)}{t('/g')}</bdi>
-                            : t('Unavailable')}
+                          {renderCurrentUnitPrice(asset)}
                         </strong>
                       </div>
                     )}
@@ -1536,6 +1485,7 @@ export default function PortfolioPage() {
                       <strong className="mobile-data-value">{getVenueMeta(asset.primaryVenue, manualAccounts).label}</strong>
                     </div>
                   </div>
+                  {renderHoldingQuote(asset)}
 
                   <div className="mobile-action-row" style={{ marginTop: 12 }}>
                     <span className={`badge badge-lg ${
@@ -1558,12 +1508,18 @@ export default function PortfolioPage() {
                       {asset.oldestOpenLotAt ? t(`Since ${asset.oldestOpenLotAt.slice(0, 10)}`) : t('Open lot')}
                     </span>
                   </div>
+                  {tradeEntry.canEdit && asset.assetClass !== 'cash' &&
+                    <div className="mobile-action-row" style={{ marginTop: 8 }}>
+                      <TradeEntryActions compact launchTrade={tradeEntry.launchTrade}
+                        context={{ asset: asset.symbol, assetClass: asset.assetClass, venue: asset.venue }} />
+                    </div>}
                 </div>
               );
             })}
           </div>
         </div>
       </div>
+      {tradeEntry.dialog}
     </AppShell>
   );
 }

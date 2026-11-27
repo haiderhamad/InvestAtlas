@@ -1,7 +1,7 @@
 export type PublicMarketCopyKey =
   | 'bannerTitle' | 'bannerBody' | 'openSettings' | 'sectionTitle' | 'intro'
   | 'yahoo' | 'spot' | 'coinpaprika' | 'coingecko' | 'binance' | 'kraken' | 'bullion' | 'fx'
-  | 'terms' | 'confirm' | 'activate' | 'update' | 'inactive' | 'active'
+  | 'terms' | 'confirm' | 'activate' | 'update' | 'clearSaved' | 'inactive' | 'active'
   | 'yahooNotice' | 'sessionNote' | 'providerNote' | 'twelveCoverage'
   | 'marketdataTitle' | 'marketdataInfo' | 'marketdataKey' | 'marketdataTerms'
   | 'marketdataConsent' | 'marketdataConnect' | 'marketdataDisconnect'
@@ -27,10 +27,11 @@ const EN: Record<PublicMarketCopyKey, string> = {
   confirm: 'Confirm personal-use terms',
   activate: 'Activate public sources for this login',
   update: 'Update active sources',
+  clearSaved: 'Clear saved sources',
   inactive: 'No public sources active in this login.',
   active: 'Active for this login:',
   yahooNotice: 'Yahoo Finance is an unofficial, unsupported data endpoint. Yahoo restricts automated collection without prior permission, even for private research. Your selection does not waive those restrictions. Blocked or stale responses remain unavailable; no bypass is attempted.',
-  sessionNote: 'Selection is stored only in this browser tab, cleared on sign-out or tab close, and is not stored in Firebase. Never includes personal API keys.',
+  sessionNote: 'Your source choices are saved for this workspace in this browser. Activate them again when this session has no active sources. The saved choices contain no API keys.',
   providerNote: 'Optional personal market keys (Twelve Data / Tiingo / Market Data API / EODHD) are managed separately below. Personal AI keys remain separate from market sources.',
   coverageTitle: 'Price coverage and backups',
   coverageStocks: 'Stocks and ETFs: Yahoo uses exact EUR/USD listings, including individually resolved additions. Prices can be delayed. A matching price does not establish Shariah compliance.',
@@ -70,10 +71,11 @@ const DE: Record<PublicMarketCopyKey, string> = {
   confirm: 'Bedingungen für private Nutzung bestätigen',
   activate: 'Öffentliche Quellen für diese Anmeldung aktivieren',
   update: 'Aktive Quellen aktualisieren',
+  clearSaved: 'Gespeicherte Quellen abwählen',
   inactive: 'Für diese Anmeldung sind keine öffentlichen Quellen aktiv.',
   active: 'Für diese Anmeldung aktiv:',
   yahooNotice: 'Yahoo Finance ist eine inoffizielle, nicht garantierte Datenquelle. Yahoo beschränkt automatisierte Abrufe ohne vorherige Erlaubnis, auch bei privater Forschung. Deine Bestätigung ersetzt keine Nutzungserlaubnis. Gesperrte oder veraltete Kurse bleiben unverfügbar; Schutzmaßnahmen werden nicht umgangen.',
-  sessionNote: 'Die Auswahl bleibt nur in diesem Browser-Tab, wird beim Abmelden oder Schließen gelöscht und nicht in Firebase gespeichert. API-Schlüssel sind nicht enthalten.',
+  sessionNote: 'Deine Quellenauswahl bleibt für diesen Arbeitsbereich im Browser gespeichert. Aktiviere sie erneut, wenn in dieser Sitzung keine Quellen aktiv sind. Die gespeicherte Auswahl enthält keine API-Schlüssel.',
   providerNote: 'Optionale eigene Marktdaten-Schlüssel (Twelve Data / Tiingo / Market Data API / EODHD) werden unten separat verwaltet. Eigene AI-Schlüssel bleiben von den Kursquellen getrennt.',
   coverageTitle: 'Preisabdeckung und Ersatzquellen',
   coverageStocks: 'Aktien und ETFs: Yahoo verwendet genaue EUR-/USD-Listings, einschließlich einzeln geprüfter Ergänzungen. Kurse können verzögert sein. Ein passender Kurs belegt keine Scharia-Konformität.',
@@ -113,10 +115,11 @@ const AR: Record<PublicMarketCopyKey, string> = {
   confirm: 'تأكيد شروط الاستخدام الشخصي',
   activate: 'تفعيل المصادر العامة لهذا الدخول',
   update: 'تحديث المصادر النشطة',
+  clearSaved: 'إلغاء تحديد المصادر المحفوظة',
   inactive: 'لا توجد مصادر عامة مفعلة لهذا الدخول.',
   active: 'المصادر النشطة لهذا الدخول:',
   yahooNotice: 'Yahoo Finance مصدر غير رسمي وغير مضمون. تقيّد شروط Yahoo السحب الآلي للبيانات دون إذن مسبق، حتى للاستخدام الشخصي. موافقتك هنا لا تُغني عن إذن المزود؛ لا نتجاوز قيود الحماية وتبقى الأسعار المحجوبة أو القديمة غير متاحة.',
-  sessionNote: 'يُحفظ الاختيار في علامة المتصفح هذه فقط ويُمسح عند تسجيل الخروج أو إغلاقها، ولا يُخزن في Firebase أو يتضمن مفاتيح API.',
+  sessionNote: 'تُحفظ اختياراتك من المصادر لمساحة العمل هذه في هذا المتصفح. فعّل المصادر مجددًا إذا لم تكن هناك مصادر نشطة في هذه الجلسة. لا تحتوي الاختيارات المحفوظة على مفاتيح API.',
   providerNote: 'تُدار مفاتيح السوق الشخصية الاختيارية (Twelve Data / Tiingo / Market Data API / EODHD) أدناه بشكل منفصل. تبقى مفاتيح الذكاء الاصطناعي الشخصية منفصلة عن مصادر الأسعار.',
   coverageTitle: 'تغطية الأسعار والمصادر البديلة',
   coverageStocks: 'الأسهم وصناديق ETF: يستخدم Yahoo إدراجات محددة باليورو أو الدولار، بما فيها الإضافات التي تم التحقق منها. قد تتأخر الأسعار. توفر السعر لا يثبت التوافق الشرعي.',

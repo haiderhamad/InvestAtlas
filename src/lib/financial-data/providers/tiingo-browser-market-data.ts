@@ -10,7 +10,7 @@ import {
   type FieldProvenance,
   type QuoteSnapshot,
 } from '@/lib/financial-data/contracts';
-import type { CurrentPriceSnapshot } from '@/lib/financial-data/quotes/current-quote-service';
+import type { CurrentPriceSnapshot, CurrentQuoteIssue } from '@/lib/financial-data/quotes/current-quote-service';
 import { fetchPublicGoldSpot, fetchPublicMetalSpot, type PublicGoldSpot, type PublicMetalSpot } from './public-gold-spot';
 import { fetchPublicCryptoSpot, type PublicCryptoSpot, type PublicCryptoSymbol } from './public-crypto-spot';
 import { fetchPublicCoinPaprikaSpot, type CoinPaprikaSpot } from './public-coinpaprika-spot';
@@ -601,15 +601,54 @@ function dailyFrom(source: MarketSource, owner: string, symbol: string, signal?:
   throw new Error('Spot quotes do not provide historical prices');
 }
 
+function withBrowserQuoteExpiry(snapshot: CurrentPriceSnapshot, fx: FxRate | null): CurrentPriceSnapshot {
+  const field = snapshot.fields.price;
+  if (field.status !== 'available' || !field.observedAt) return snapshot;
+  const converted = snapshot.fields.listingCurrency !== snapshot.fields.outputCurrency;
+  const marketSource = converted ? field.provenance.derivedFrom?.[0] : field.provenance;
+  const provider = marketSource?.providerId;
+  // Match the observation-age and UTC date conventions of these browser adapters.
+  const observation = Date.parse(field.observedAt);
+  const endOfDay = /^\d{4}-\d{2}-\d{2}$/.test(field.observedAt) ? DAY_MS - 1_000 : 0;
+  let marketExpiry: number;
+  switch (provider) {
+    case 'tiingo_browser_byok':
+    case 'twelve_personal_daily': marketExpiry = observation + endOfDay + 4 * DAY_MS; break;
+    case 'yahoo_personal_daily':
+    case 'yahoo_personal_market': marketExpiry = observation + endOfDay + 7 * DAY_MS; break;
+    case 'marketdata_personal_midpoint': marketExpiry = observation + 5 * DAY_MS; break;
+    case 'binance_public_daily':
+    case 'kraken_public_daily': marketExpiry = observation + 3 * DAY_MS; break;
+    case 'gold_api_public_spot': marketExpiry = observation + 90 * 60_000; break;
+    case 'gold_api_public_crypto_spot': marketExpiry = observation + 15 * 60_000; break;
+    case 'coinpaprika_public':
+    case 'coingecko_public': marketExpiry = observation + 30 * 60_000; break;
+    default: return snapshot;
+  }
+  // ECB marks a reference rate fresh through its third following UTC date.
+  const fxDate = converted ? parseIsoDate(fx?.asOf) : null;
+  if (converted && fxDate === null) return snapshot;
+  const freshUntil = fxDate === null ? marketExpiry : Math.min(marketExpiry, fxDate + 4 * DAY_MS);
+  return Number.isSafeInteger(freshUntil) ? { ...snapshot, freshUntil } : snapshot;
+}
+
 async function selectedCurrent(symbols: string[], currency: QuoteCurrency, owner: string, signal?: AbortSignal): Promise<Response> {
+  const consentRevision = getPublicSourceConsentRevision();
+  const assertActive = () => {
+    if (signal?.aborted || !activeMarketOwner(owner) || getPublicSourceConsentRevision() !== consentRevision) {
+      throw new DOMException('Aborted', 'AbortError');
+    }
+  };
   const prefs = readSourceSelection(owner);
-  const mayNeedConversion = symbols.some(symbol => marketSourceOrder(prefs).some(s =>
-    eligible(s, owner, symbol, false, currency, prefs.fx)
-      && (s === 'yahoo' ? getAssetConfig(symbol)?.nativeCurrency : s === 'binance' ? 'eur' : 'usd') !== currency));
-  const fx = prefs.fx && mayNeedConversion && activeMarketOwner(owner)
+  const sourceOrder = marketSourceOrder(prefs);
+  const conversionCandidates = new Set(symbols.filter(symbol => sourceOrder.some(source =>
+    eligible(source, owner, symbol, false, currency, prefs.fx)
+      && (source === 'yahoo' ? getAssetConfig(symbol)?.nativeCurrency : source === 'binance' ? 'eur' : 'usd') !== currency)));
+  const fx = prefs.fx && conversionCandidates.size > 0 && activeMarketOwner(owner)
     ? await fetchCurrentFx(signal) : null;
+  assertActive();
   const prices: Record<string, CurrentPriceSnapshot> = {};
-  const issues: Array<{ symbol: string; code: string }> = [];
+  const issues: CurrentQuoteIssue[] = [];
   let midpointBatch: Promise<Map<string, MarketDataMidpoint>> | undefined;
   const midpoints = () => midpointBatch ??= loadMarketDataMidpoints(owner,
     symbols.filter(s => supportsMidpoint(s)).map(s => getPersonalListingIdentity(s) ?? s), signal)
@@ -635,10 +674,16 @@ async function selectedCurrent(symbols: string[], currency: QuoteCurrency, owner
       return null;
     });
   });
-  if (signal?.aborted || !activeMarketOwner(owner)) throw new DOMException('Aborted','AbortError');
+  assertActive();
   outcomes.forEach((outcome, i) => {
-    if (outcome.status === 'fulfilled' && outcome.value) prices[symbols[i]] = outcome.value;
-    else issues.push({symbol: symbols[i], code: !fx && mayNeedConversion ? 'fx_unavailable' : 'provider_unavailable'});
+    const symbol = symbols[i];
+    if (outcome.status === 'fulfilled' && outcome.value) {
+      prices[symbol] = withBrowserQuoteExpiry(outcome.value, fx);
+      return;
+    }
+    const blockedByFx = !fx && conversionCandidates.has(symbol)
+      && !sourceOrder.some(source => eligible(source, owner, symbol, false, currency, false));
+    issues.push({ symbol, code: blockedByFx ? 'fx_unavailable' : 'provider_unavailable' });
   });
   schedulePersonalHistoryWarmup(owner, symbols);
   const quotes = Object.values(prices), modes = new Set(quotes.map(q => q.dataMode)), timings = new Set(quotes.map(q => q.priceTiming));
@@ -656,15 +701,11 @@ async function handleCurrent(url: URL, userId: string, signal?: AbortSignal): Pr
   const activePersonalSession = hasTiingoBrowserCredential(userId);
   const publicCrypto = symbols.filter((symbol): symbol is PublicCryptoSymbol =>
     (symbol === 'BTC' || symbol === 'ETH') && !activePersonalSession);
-  const supported = symbols.filter((symbol) => supportsTiingoBrowserAsset(symbol)
-    && !publicCrypto.includes(symbol as PublicCryptoSymbol));
+  const supported = activePersonalSession ? symbols.filter(supportsTiingoBrowserAsset) : [];
   const wantsPublicGold = symbols.includes('GOLD');
   const prices: Record<string, CurrentPriceSnapshot> = {};
-  const issues: Array<{
-    symbol: string;
-    code: 'provider_unavailable' | 'fx_unavailable';
-  }> = symbols
-    .filter((symbol) => !supportsTiingoBrowserAsset(symbol) && symbol !== 'GOLD'
+  const issues: CurrentQuoteIssue[] = symbols
+    .filter((symbol) => !supported.includes(symbol) && symbol !== 'GOLD'
       && !publicCrypto.includes(symbol as PublicCryptoSymbol))
     .map((symbol) => ({ symbol, code: 'provider_unavailable' as const }));
   const fx = currency === 'eur' && (supported.length > 0 || wantsPublicGold || publicCrypto.length > 0)
@@ -683,19 +724,19 @@ async function handleCurrent(url: URL, userId: string, signal?: AbortSignal): Pr
       const quote = outcome.status === 'fulfilled'
         ? quoteFromSeries(outcome.value, currency, fx)
         : null;
-      if (quote) prices[symbol] = quote;
+      if (quote) prices[symbol] = withBrowserQuoteExpiry(quote, fx);
       else issues.push({ symbol, code: 'provider_unavailable' });
     });
     for (const symbol of publicCrypto) {
       const spot = await fetchPublicCryptoSpot(symbol, signal);
       const quote = spot ? quoteFromPublicCrypto(spot, currency, fx) : null;
-      if (quote) prices[symbol] = quote;
+      if (quote) prices[symbol] = withBrowserQuoteExpiry(quote, fx);
       else issues.push({ symbol, code: 'provider_unavailable' });
     }
     if (wantsPublicGold) {
       const spot = await fetchPublicGoldSpot(signal);
       const quote = spot ? quoteFromPublicGold(spot, currency, fx) : null;
-      if (quote) prices.GOLD = quote;
+      if (quote) prices.GOLD = withBrowserQuoteExpiry(quote, fx);
       else issues.push({ symbol: 'GOLD', code: 'provider_unavailable' });
     }
   }

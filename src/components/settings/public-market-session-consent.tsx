@@ -8,7 +8,7 @@ import {
   setPublicSourceConsent,
   type PublicSourceId,
 } from '@/lib/financial-data/providers/public-source-consent';
-import { readSourceSelection, saveSourceSelection } from '@/lib/financial-data/providers/source-selection';
+import { readSavedSourceSelection, readSourceSelection, saveSourceSelection } from '@/lib/financial-data/providers/source-selection';
 import { publicMarketCopy } from './public-market-consent-copy';
 
 const OPTIONS: readonly PublicSourceId[] = ['yahoo', 'spot', 'coinpaprika', 'coingecko', 'binance', 'kraken', 'bullion'];
@@ -27,11 +27,13 @@ export function PublicMarketSessionConsent({ owner }: { owner: string }) {
   const { language } = useAppTranslation();
   const text = (key: Parameters<typeof publicMarketCopy>[1]) => publicMarketCopy(language, key);
   const [active, setActive] = useState<PublicSourceId[]>(() => readPublicSourceConsent(owner));
-  const [selected, setSelected] = useState<PublicSourceId[]>(() => {
-    const stored = readPublicSourceConsent(owner);
-    return stored.length ? stored : RECOMMENDED;
-  });
+  const saved = readSavedSourceSelection(owner);
+  const savedOptions = saved ? OPTIONS.filter(source => saved[source]) : RECOMMENDED;
+  const [selected, setSelected] = useState<PublicSourceId[]>(() => active.length ? active : savedOptions);
   const [agreed, setAgreed] = useState(false);
+  const matchesActive = selected.length === active.length && selected.every(source => active.includes(source));
+  const confirmed = active.length > 0 && matchesActive;
+  const canApply = selected.length === 0 ? active.length > 0 || savedOptions.length > 0 : !matchesActive && agreed;
 
   useEffect(() => {
     const sync = () => setActive(readPublicSourceConsent(owner));
@@ -41,7 +43,7 @@ export function PublicMarketSessionConsent({ owner }: { owner: string }) {
   }, [owner]);
 
   function apply() {
-    if (selected.length > 0 && !agreed) return;
+    if (!canApply) return;
     const preferences = readSourceSelection(owner);
     saveSourceSelection(owner, {
       ...preferences,
@@ -54,7 +56,6 @@ export function PublicMarketSessionConsent({ owner }: { owner: string }) {
       bullion: selected.includes('bullion'),
     });
     setPublicSourceConsent(owner, selected);
-    setActive(readPublicSourceConsent(owner));
     setAgreed(false);
   }
 
@@ -70,19 +71,27 @@ export function PublicMarketSessionConsent({ owner }: { owner: string }) {
           <input
             type="checkbox"
             checked={selected.includes(source)}
-            onChange={(event) => setSelected((previous) =>
-              event.target.checked ? [...previous, source] : previous.filter((id) => id !== source))}
+            onChange={(event) => {
+              const checked = event.currentTarget.checked;
+              setSelected(previous => checked ? [...previous, source] : previous.filter(id => id !== source));
+              setAgreed(false);
+            }}
           />
           <span>{text(source)}{' '}<a href={TERMS[source]} target="_blank" rel="noreferrer">({source})</a></span>
         </label>
       ))}
       <p className="panel-subtitle">{text('yahooNotice')}</p>
       <label className="financial-provider-consent">
-        <input type="checkbox" checked={agreed} onChange={(event) => setAgreed(event.target.checked)} />
+        <input
+          type="checkbox"
+          checked={confirmed || agreed}
+          disabled={confirmed || selected.length === 0}
+          onChange={event => setAgreed(event.currentTarget.checked)}
+        />
         <span>{text('terms')}</span>
       </label>
-      <button type="button" className="btn btn-primary" disabled={selected.length > 0 ? !agreed : active.length === 0} onClick={apply}>
-        {text(active.length ? 'update' : 'activate')}
+      <button type="button" className="btn btn-primary" disabled={!canApply} onClick={apply}>
+        {text(active.length ? 'update' : selected.length ? 'activate' : 'clearSaved')}
       </button>
       <p className="panel-subtitle">{text('sessionNote')}</p>
       <p className="panel-subtitle">{text('providerNote')}</p>

@@ -1,6 +1,6 @@
 'use client';
 
-import { formatChartAxis, getChartAxisWidth, getChartDomain } from '@/lib/charts/scale';
+import { formatChartAxis, getChartDomain } from '@/lib/charts/scale';
 import AppShell from '@/components/layout/app-shell';
 import PageQuickStart from '@/components/layout/page-quick-start';
 import { buildDividendInsights } from '@/lib/dividends/dividend-insights';
@@ -197,30 +197,19 @@ export default function DividendsPage() {
 
             <div style={{ height: 280 }}>
               <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                <BarChart data={insights.monthlyTotals} margin={{ top: 0, right: 0, left: -5, bottom: 0 }}>
+                <BarChart data={insights.monthlyTotals} margin={{ top: 16, right: 4, left: 4, bottom: 0 }}>
                   <CartesianGrid stroke="var(--chart-grid)" vertical={false} strokeDasharray="3 3" strokeOpacity={0.6} />
                   <XAxis dataKey="shortLabel" tickLine={false} axisLine={false} tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
                   <YAxis
                     tickLine={false}
                     axisLine={false}
-                    tick={(props: any) => {
-                      const { x, y, payload } = props;
-                      const val = Number(payload.value);
-                      const formattedValue = formatChartAxis(val * displayFactor, displayDomain, numberLocale, axisOptions);
-                      return (
-                        <g transform={`translate(${x},${y})`}>
-                          <text x={language === 'ar' ? 10 : -10} y={4} textAnchor={language === 'ar' ? 'start' : 'end'} fill="none" stroke="var(--bg-card)" strokeWidth={2} fontSize={11} fontWeight="bold">
-                            {formattedValue}
-                          </text>
-                          <text x={language === 'ar' ? 10 : -10} y={4} textAnchor={language === 'ar' ? 'start' : 'end'} fill="var(--text-muted)" fontSize={11}>
-                            {formattedValue}
-                          </text>
-                        </g>
-                      );
-                    }}
+                    tickSize={0}
+                    tickMargin={12}
+                    tickFormatter={(value: number) => formatChartAxis(value * displayFactor, displayDomain, numberLocale, axisOptions)}
+                    tick={{ fill: 'var(--text-muted)', fontSize: 11, stroke: 'var(--bg-card)', strokeWidth: 2, paintOrder: 'stroke' }}
                     orientation={language === 'ar' ? 'right' : 'left'}
                     domain={monthlyDomain}
-                    width={getChartAxisWidth(displayDomain, numberLocale, axisOptions)}
+                    width="auto"
                   />
                   <Tooltip
                     content={(
@@ -235,6 +224,7 @@ export default function DividendsPage() {
                   <Bar
                     dataKey="total"
                     fill="var(--series-dividends)"
+                    maxBarSize={48}
                     radius={[10, 10, 0, 0]}
                     isAnimationActive
                     animationDuration={900}

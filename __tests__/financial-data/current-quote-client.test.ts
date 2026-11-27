@@ -106,6 +106,49 @@ describe('current quote client batching', () => {
     expect(result.failedSymbols).toEqual(symbols(30).slice(25));
   });
 
+  it('preserves recognized issue codes only for requested symbols without usable prices', async () => {
+    const result = await fetchCurrentQuoteBatches(['META', 'BTC', 'GOLD', 'SILVER', 'ISWD'], 'eur', async () => Response.json({
+      status: 'partial',
+      prices: { META: { price: 100 } },
+      issues: [
+        { symbol: 'META', code: 'rate_limited' },
+        { symbol: 'BTC', code: 'provider_unavailable' },
+        { symbol: 'BTC', code: 'rate_limited' },
+        { symbol: 'GOLD', code: 'fx_unavailable' },
+        { symbol: 'SILVER', code: 'unsupported' },
+        { symbol: 'ETH', code: 'fx_unavailable' },
+        null,
+      ],
+    }));
+    expect(result.issues).toEqual({ BTC: 'rate_limited', GOLD: 'fx_unavailable' });
+    expect(result.failedSymbols).toEqual(['BTC', 'GOLD', 'SILVER', 'ISWD']);
+  });
+
+  it.each([
+    ['45', 45_000],
+    ['Fri, 20 Nov 2026 12:01:00 GMT', 60_000],
+    ['1.5', undefined],
+    ['2026-11-20', undefined],
+    ['Fri, 20 Nov 2026 11:59:00 GMT', undefined],
+  ])('honors a rate limit and validates Retry-After %s', async (value, delay) => {
+    const now = Date.parse('2026-11-20T12:00:00Z');
+    const clock = jest.spyOn(Date, 'now').mockReturnValue(now);
+    const fetcher = jest.fn(async () => Response.json({}, {
+      status: 429, headers: { 'Retry-After': value },
+    }));
+    try {
+      const result = await fetchCurrentQuoteBatches(symbols(30), 'eur', fetcher);
+      expect(result.issues?.ASSET1).toBe('rate_limited');
+      expect(result.retryAt).toBe(delay === undefined ? undefined : now + delay);
+      if (delay !== undefined) {
+        expect(fetcher).toHaveBeenCalledTimes(1);
+        expect(result.issues?.ASSET30).toBe('rate_limited');
+      }
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
   it('does not expose a stale sourced price to watchlists or other client consumers', async () => {
     const fetcher = jest.fn(async () => Response.json({
       status: 'complete',
@@ -125,6 +168,23 @@ describe('current quote client batching', () => {
     }));
 
     const result = await fetchCurrentQuoteBatches(['AAPL'], 'eur', fetcher);
+
+    expect(result.prices).toEqual({});
+    expect(result.failedSymbols).toEqual(['AAPL']);
+    expect(result.status).toBe('unavailable');
+  });
+
+  it('excludes a quote when its reported freshness deadline has elapsed', async () => {
+    const result = await fetchCurrentQuoteBatches(['AAPL'], 'eur', async () => Response.json({
+      status: 'partial',
+      prices: {
+        AAPL: {
+          price: 100,
+          freshUntil: Date.now() - 60_000,
+          fields: { price: { status: 'available', freshness: 'fresh', value: { amount: 100, currency: 'EUR' } } },
+        },
+      },
+    }));
 
     expect(result.prices).toEqual({});
     expect(result.failedSymbols).toEqual(['AAPL']);

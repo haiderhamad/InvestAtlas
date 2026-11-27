@@ -22,7 +22,7 @@ jest.mock('@/lib/financial-data/providers/eodhd-personal', () => ({
 }));
 jest.mock('@/lib/financial-data/providers/yahoo-personal', () => ({ loadYahooPersonalDailySeries: jest.fn() }));
 jest.mock('@/lib/financial-data/providers/tiingo-browser', () => ({
-  TIINGO_BROWSER_PROVIDER_CHANGE_EVENT: 'investatlas:tiingo-browser-provider-change',
+  TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT: 'investatlas:tiingo-browser-credential-change',
   loadTiingoBrowserDailySeries: jest.fn(), hasTiingoBrowserCredential: () => true, supportsTiingoBrowserAsset: () => true,
 }));
 jest.mock('@/lib/financial-data/providers/twelve-personal', () => ({

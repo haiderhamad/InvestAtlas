@@ -14,9 +14,13 @@ const transient = new Map<string, SourceSelection>();
 function normalize(v: Partial<SourceSelection> | null): SourceSelection {
   return { publicFirst: v?.publicFirst !== false, preferred: v?.preferred === 'eodhd' ? 'eodhd' : v?.preferred === 'marketdata' ? 'marketdata' : v?.preferred === 'twelve' ? 'twelve' : 'tiingo', yahoo: v?.yahoo !== false, spot: v?.spot !== false, coinpaprika: v?.coinpaprika !== false, coingecko: v?.coingecko !== false, fx: v?.fx !== false, binance: v?.binance === true, kraken: v?.kraken === true, bullion: v?.bullion === true, twelveDemo: v?.twelveDemo === true,historyPreload:v?.historyPreload!==false };
 }
-export function readSourceSelection(owner: string): SourceSelection {
+export function readSavedSourceSelection(owner: string): SourceSelection | null {
   try { const raw = readWorkspaceStorageItem(storageKey, { userId: owner }); if (raw) return normalize(JSON.parse(raw)); } catch { /* Storage may be denied by the browser. */ }
-  return { ...(transient.get(owner) ?? defaults) };
+  const saved = transient.get(owner);
+  return saved ? { ...saved } : null;
+}
+export function readSourceSelection(owner: string): SourceSelection {
+  return readSavedSourceSelection(owner) ?? { ...defaults };
 }
 export function saveSourceSelection(owner: string, selection: SourceSelection): void {
   const safe = normalize(selection);

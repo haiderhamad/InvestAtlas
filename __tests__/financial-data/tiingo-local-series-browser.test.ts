@@ -161,6 +161,15 @@ describe('local Next.js Tiingo server → Portfolio / Charts', () => {
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
+  it('does not classify a missing Tiingo session as an FX failure', async () => {
+    global.fetch = jest.fn(async () => new Response(null, { status: 503 }));
+    const response = await handlePersonalBrowserMarketRequest('/api/prices/current?symbols=AAPL&currency=eur', {}, 'owner-a');
+    expect(await response?.json()).toMatchObject({
+      status: 'unavailable', issues: [{ symbol: 'AAPL', code: 'provider_unavailable' }],
+    });
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
   it('fails closed when Firebase user changes, without sending another user token', async () => {
     setTiingoBrowserCredential('owner-a', 'SYNTHETIC_PERSONAL_KEY');
     identity.mockResolvedValueOnce({ userId: 'owner-b', token: 'different-firebase-id-token' });

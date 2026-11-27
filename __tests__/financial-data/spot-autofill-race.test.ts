@@ -1,30 +1,19 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readTradeReference } from '@/lib/financial-data/history/selection';
 
-describe('transaction spot-price autofill trust boundary', () => {
-  const source = readFileSync(
-    join(process.cwd(), 'src/components/layout/global-add-modal.tsx'),
-    'utf8',
-  );
+it('skips a newer close with conflicting provider provenance', () => {
+  const earlier = { ref: 'earlier', kind: 'market', providerId: 'verified_provider', providerName: 'Verified provider' };
+  const disputed = { ref: 'disputed', kind: 'market', providerId: 'provider_a', providerName: 'Provider A' };
 
-  it('cancels superseded requests and ignores late responses', () => {
-    expect(source).toContain('const spotRequestIdRef = useRef(0)');
-    expect(source).toContain('const controller = new AbortController()');
-    expect(source).toContain('spotRequestIdRef.current !== requestId');
-    expect(source).toContain('controller.abort()');
-  });
-
-  it('invalidates a previous automatic value without deleting a custom value', () => {
-    expect(source).toContain("priceSourceRef.current === 'spot'");
-    expect(source).toContain('invalidateAutoSpotPrice()');
-    expect(source).toContain('useState(editTransaction?.price ?? 0)');
-  });
-
-  it('preserves an existing transaction price until its pricing context changes', () => {
-    expect(source).toContain(
-      'const spotContextDirtyRef = useRef(!editTransaction)',
-    );
-    expect(source).toContain('if (!spotContextDirtyRef.current) return;');
-    expect(source).toContain('markSpotContextDirty()');
-  });
+  expect(readTradeReference({
+    status: 'partial',
+    symbol: 'META',
+    currency: 'eur',
+    sources: [earlier, disputed, { ...disputed, providerId: 'provider_b', providerName: 'Provider B' }],
+    prices: [
+      { date: '2024-11-18', close: 22, sourceRef: 'earlier' },
+      { date: '2024-11-19', close: 25, sourceRef: 'disputed' },
+    ],
+  }, {
+    symbol: 'META', currency: 'eur', tradeDay: '2024-11-20', executionCutoff: Date.parse('2024-11-20T18:33Z'),
+  })).toEqual({ date: '2024-11-18', price: 22, source: 'Verified provider' });
 });

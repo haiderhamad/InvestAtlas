@@ -1,30 +1,56 @@
 /** @jest-environment jsdom */
 import React from 'react';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import ChartsPage from '@/app/charts/page';
+import { readSourceSelection, saveSourceSelection } from '@/lib/financial-data/providers/source-selection';
+import {
+  TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT,
+  TIINGO_BROWSER_PROVIDER_CHANGE_EVENT,
+} from '@/lib/financial-data/providers/tiingo-browser';
+import { resolveBrowserWorkspace } from '@/lib/storage/workspace-storage';
+import type { LanguagePreference } from '@/lib/preferences/app-preferences';
 import { fetchFinancialData } from '@/lib/financial-data/client';
 import { availableField, createMoney, unavailableField } from '@/lib/financial-data/contracts';
 import type { CurrentPriceSnapshot } from '@/lib/financial-data/quotes/current-quote-service';
 
 let mockShellGate = false;
+let mockRealSvg = false;
+let mockCurrency: 'usd' | 'eur' = 'usd';
+let mockLanguage: LanguagePreference = 'en';
+let mockUser = { id: 'chart-test' };
 jest.mock('@/components/layout/app-shell', () => ({ __esModule: true, default: ({ children }: { children: React.ReactNode }) => mockShellGate ? <p>Loading cloud workspace</p> : children }));
-jest.mock('@/lib/auth/auth-context', () => ({ useAuth: () => ({ user: { id: 'chart-test' } }) }));
+jest.mock('@/lib/auth/auth-context', () => ({ useAuth: () => ({ user: mockUser }) }));
 jest.mock('@/lib/firebase', () => ({ auth: null, db: null }));
 jest.mock('@/lib/financial-data/client', () => ({ fetchFinancialData: jest.fn() }));
-jest.mock('@/lib/i18n/use-app-translation', () => ({ useAppTranslation: () => ({ language: 'en', t: (text: string) => text }) }));
+jest.mock('@/lib/i18n/use-app-translation', () => ({
+  useAppTranslation: () => ({
+    language: mockLanguage,
+    t: (text: string) => jest.requireActual('@/lib/i18n/app-localization').translateAppText(text, mockLanguage),
+  }),
+}));
 jest.mock('@/lib/preferences/display-currency', () => ({
-  useDisplayCurrencyPreference: () => ({ displayCurrency: 'usd' }),
+  useDisplayCurrencyPreference: () => ({ displayCurrency: mockCurrency }),
   formatQuoteCurrency: (value: number) => `$${value.toFixed(2)}`,
 }));
 // Inspect the real page's boundary to the external SVG renderer, keeping
 // fetching/state/indicator/window calculations real.
-jest.mock('recharts', () => ({
-  AreaChart: ({ data, children }: { data: unknown[]; children: React.ReactNode }) => <><output aria-label="Chart observations">{JSON.stringify(data)}</output>{React.Children.toArray(children).filter((child) => !React.isValidElement(child) || child.type !== 'defs')}</>,
-  Area: ({ isAnimationActive }: { isAnimationActive: boolean }) => <output aria-label="Chart animation">{String(isAnimationActive)}</output>, CartesianGrid: () => null, Legend: () => null, Line: () => null,
-  ReferenceLine: () => null, Tooltip: () => null,
-  XAxis: ({ tickFormatter }: { tickFormatter: (value: string) => string }) => <output aria-label="Chart time labels">{[tickFormatter('2026-09-07T01:00:00Z'), tickFormatter('2026-09-07T02:00:00Z')].join('|')}</output>,
-  YAxis: ({ domain, yAxisId }: { domain: unknown; yAxisId?: string }) => yAxisId ? null : <output aria-label="Chart price domain">{JSON.stringify(domain)}</output>,
-}));
+jest.mock('recharts', () => {
+  const real = jest.requireActual('recharts');
+  const mock = {
+    AreaChart: ({ data, children }: { data: unknown[]; children: React.ReactNode }) => <><output aria-label="Chart observations">{JSON.stringify(data)}</output>{React.Children.toArray(children).filter((child) => !React.isValidElement(child) || child.type !== 'defs')}</>,
+    Area: ({ isAnimationActive }: { isAnimationActive: boolean }) => <output aria-label="Chart animation">{String(isAnimationActive)}</output>,
+    CartesianGrid: () => null,
+    Legend: () => null,
+    Line: () => null,
+    ReferenceLine: () => null,
+    Tooltip: () => null,
+    XAxis: ({ tickFormatter }: { tickFormatter: (value: string) => string }) => <output aria-label="Chart time labels">{[tickFormatter('2026-09-07T01:00:00Z'), tickFormatter('2026-09-07T02:00:00Z')].join('|')}</output>,
+    YAxis: ({ domain, yAxisId }: { domain: unknown; yAxisId?: string }) => yAxisId ? null : <output aria-label="Chart price domain">{JSON.stringify(domain)}</output>,
+  };
+  return { ...real, ...Object.fromEntries(Object.entries(mock).map(([key, component]) => [
+    key, (props: object) => React.createElement(mockRealSvg ? real[key] : component, props),
+  ])) };
+});
 
 const daily = Array.from({ length: 250 }, (_, index) => ({
   date: new Date(Date.UTC(2026, 0, 1 + index)).toISOString().slice(0, 10), close: 0.00001,
@@ -87,10 +113,176 @@ it('keeps late quotes attached to their asset after a selection change', async (
   expect(screen.getByText('$100.00/g')).toBeTruthy();
 });
 
+it.each(['currency', 'workspace', 'account', 'source', 'Tiingo credential'] as const)('clears the previous quote and historical close after a %s change', async change => {
+  let oldScope = true;
+  jest.mocked(fetchFinancialData).mockImplementation(async input => {
+    if (!oldScope) return new Promise<Response>(() => {});
+    if (String(input).startsWith('/api/prices/current?')) {
+      return { ok: true, json: async () => ({ prices: { BTC: sourcedQuote('BTC', 321) } }) } as Response;
+    }
+    return reply([{ date: '2026-11-19', close: 320 }]);
+  });
+  const chart = render(<ChartsPage />);
+  expect(await screen.findByText('$321.00')).toBeTruthy();
+  expect(observations()).toMatchObject([{ close: 320 }]);
+  oldScope = false;
+
+  act(() => {
+    if (change === 'currency') mockCurrency = 'eur';
+    else if (change === 'workspace') resolveBrowserWorkspace('another-chart-owner');
+    else if (change === 'account') mockUser = { id: 'another-chart-owner' };
+    else if (change === 'Tiingo credential') window.dispatchEvent(new Event(TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT));
+    else {
+      const selection = readSourceSelection('chart-test');
+      saveSourceSelection('chart-test', { ...selection, yahoo: !selection.yahoo });
+    }
+    chart.rerender(<ChartsPage />);
+  });
+
+  expect(screen.queryByText('$321.00')).toBeNull();
+  expect(screen.queryByText('Last historical close')).toBeNull();
+  expect(screen.queryByLabelText('Chart observations')).toBeNull();
+  expect(screen.getByText('Loading quote…')).toBeTruthy();
+});
+
+it('keeps history and quote when the Tiingo request budget changes', async () => {
+  jest.mocked(fetchFinancialData).mockImplementation(async input => {
+    if (String(input).startsWith('/api/prices/current?')) {
+      return { ok: true, json: async () => ({ prices: { BTC: sourcedQuote('BTC', 321) } }) } as Response;
+    }
+    return reply([{ date: '2026-11-19', close: 320 }]);
+  });
+  render(<ChartsPage />);
+  expect(await screen.findByText('$321.00')).toBeTruthy();
+  expect(observations()).toMatchObject([{ close: 320 }]);
+  jest.mocked(fetchFinancialData).mockClear();
+
+  act(() => window.dispatchEvent(new Event(TIINGO_BROWSER_PROVIDER_CHANGE_EVENT)));
+
+  expect(screen.getByText('$321.00')).toBeTruthy();
+  expect(observations()).toMatchObject([{ close: 320 }]);
+  expect(fetchFinancialData).not.toHaveBeenCalled();
+});
+
 it('labels history as a historical close when the separate quote is unavailable', async () => {
   render(<ChartsPage />);
   await waitFor(() => expect(observations()).toHaveLength(250));
   expect(await screen.findByText('Last historical close')).toBeTruthy();
+});
+
+it.each([
+  ['another market source', { sourceRef: 'market_2' }, 'Latest market source'],
+  ['legacy missing reference', {}, 'Earlier market source'],
+  ['an unresolved reference', { sourceRef: 'unlisted' }, null],
+  ['an explicit null reference', { sourceRef: null }, null],
+  ['an FX reference', { sourceRef: 'fx_1' }, null],
+  ['an unknown provider', { sourceRef: 'market_3' }, null],
+] as const)('attributes the latest fall-back close with %s', async (_case, metadata, expectedSource) => {
+  jest.mocked(fetchFinancialData).mockResolvedValue({ ok: true, json: async () => ({
+    status: 'partial',
+    prices: [
+      { date: '2026-11-17', close: 111, sourceRef: 'market_1' },
+      { date: '2026-11-18', close: 222, ...metadata },
+    ],
+    sources: [
+      { ref: 'market_1', kind: 'market', providerName: 'Earlier market source' },
+      { ref: 'market_2', kind: 'market', providerId: 'market_latest', providerName: 'Latest market source' },
+      { ref: 'fx_1', kind: 'fx', providerId: 'fx', providerName: 'FX source' },
+      { ref: 'market_3', kind: 'market', providerId: 'unknown_provider', providerName: 'Unknown provider' },
+    ],
+  }) } as Response);
+  render(<ChartsPage />);
+  const fallback = (await screen.findByText('Last historical close')).parentElement!;
+  expect(screen.getByText('$222.00')).toBeTruthy();
+  expect(fallback.textContent).toBe(`Last historical close · USD${expectedSource ? ` · ${expectedSource}` : ''} · As of Nov 18, 2026`);
+});
+
+it.each([
+  { source: 'InvestAtlas synthetic showcase data', providerId: 'investatlas_demo_snapshot', synthetic: true, dataMode: 'demo_snapshot' },
+  { source: 'Twelve Data (official AAPL demo history)', providerId: 'twelve_demo_daily', synthetic: false, dataMode: 'public_market_api' },
+])('identifies a close from $source as demo data', async ({ source, providerId, synthetic, dataMode }) => {
+  window.history.replaceState({}, '', `/charts?asset=${synthetic ? 'BTC' : 'AAPL'}`);
+  jest.mocked(fetchFinancialData).mockResolvedValue({ ok: true, json: async () => ({
+    status: 'partial', synthetic, dataMode,
+    prices: [{ date: '2026-11-18', close: 222, sourceRef: 'demo_1' }],
+    sources: [{ ref: 'demo_1', kind: 'market', providerId, providerName: source }],
+  }) } as Response);
+  render(<ChartsPage />);
+  const fallback = (await screen.findByText('Illustrative demo close')).parentElement!;
+  expect(fallback.textContent).toContain(source);
+  expect(screen.queryByText('Last historical close')).toBeNull();
+});
+
+it('keeps a still-fresh quote after a failed refresh, then shows the dated historical close on expiry', async () => {
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date('2026-11-20T12:00:00Z'));
+  try {
+    let refresh = false;
+    const quote = sourcedQuote('BTC', 123);
+    Object.assign(quote, { freshUntil: Date.parse('2026-11-20T12:01:00Z') });
+    quote.fields.price = availableField(createMoney(123, 'USD'), {
+      quality: 'observed', freshness: 'fresh',
+      observedAt: '2026-11-20T11:56:00Z', asOf: '2026-11-20T11:56:00Z',
+      provenance: { providerId: 'coingecko_public', providerName: 'CoinGecko', retrievedAt: '2026-11-20T12:00:00Z' },
+    });
+    quote.source = 'CoinGecko';
+    jest.mocked(fetchFinancialData).mockImplementation(async input => {
+      if (!String(input).startsWith('/api/prices/current?')) return { ok: true, json: async () => ({
+        status: 'partial', prices: [{ date: '2026-11-19', close: 120 }],
+        sources: [{ kind: 'market', providerName: 'Historical source' }],
+      }) } as Response;
+      if (refresh) return { ok: false, status: 502 } as Response;
+      return { ok: true, json: async () => ({ status: 'partial', prices: { BTC: quote } }) } as Response;
+    });
+    render(<ChartsPage />);
+    expect(await screen.findByText('$123.00')).toBeTruthy();
+    const quoteDetails = screen.getByText(/Nov 20, 2026, 11:56 AM UTC/);
+    expect(within(quoteDetails).getByText('USD')).toBeTruthy();
+    refresh = true;
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh quote' }));
+    expect(await screen.findByText('Quote refresh failed.')).toBeTruthy();
+    expect(screen.getByText('$123.00')).toBeTruthy();
+    await act(async () => { jest.advanceTimersByTime(60_001); });
+    expect(screen.queryByText('$123.00')).toBeNull();
+    expect(await screen.findByText('Last historical close')).toBeTruthy();
+    expect(screen.getByText('$120.00')).toBeTruthy();
+    expect(screen.getByText(/As of Nov 19, 2026/)).toBeTruthy();
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
+it('prevents a manual quote retry until the reported rate limit expires', async () => {
+  jest.useFakeTimers();
+  try {
+    jest.mocked(fetchFinancialData).mockImplementation(async input => {
+      if (!String(input).startsWith('/api/prices/current?')) return reply([]);
+      return {
+        ok: false, status: 429, headers: new Headers({ 'Retry-After': '15' }),
+      } as Response;
+    });
+    render(<ChartsPage />);
+    expect(await screen.findByText('Quote requests are temporarily limited.')).toBeTruthy();
+    expect(screen.getByText(/Retry available at/)).toBeTruthy();
+    const retry = screen.getByRole<HTMLButtonElement>('button', { name: 'Refresh quote' });
+    expect(retry.disabled).toBe(true);
+    fireEvent.click(screen.getByRole('tab', { name: 'Metals' }));
+    expect(jest.mocked(fetchFinancialData).mock.calls.filter(([input]) => String(input).startsWith('/api/prices/current?'))).toHaveLength(1);
+    await act(async () => { jest.advanceTimersByTime(15_001); });
+    expect(retry.disabled).toBe(false);
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
+it('localizes unavailable primary history instead of rendering provider error text', async () => {
+  mockLanguage = 'de';
+  jest.mocked(fetchFinancialData).mockResolvedValue({ ok: true, json: async () => ({
+    prices: [], error: 'No historical data available for BTC',
+  }) } as Response);
+  render(<ChartsPage />);
+  expect(await screen.findByText('Historie nicht verfügbar.')).toBeTruthy();
+  expect(screen.queryByText('No historical data available for BTC')).toBeNull();
 });
 
 it('renders fine-gram prices and daily-observation labels for close-only metal history', async () => {
@@ -135,6 +327,11 @@ it('does not download the current quote again when only the chart range changes'
 
 beforeEach(() => {
   mockShellGate = false;
+  mockRealSvg = false;
+  mockCurrency = 'usd';
+  mockLanguage = 'en';
+  mockUser = { id: 'chart-test' };
+  resolveBrowserWorkspace(mockUser.id);
   window.localStorage.clear();
   window.history.replaceState({}, '', '/charts');
   jest.mocked(fetchFinancialData).mockReset();
@@ -189,6 +386,40 @@ it('leaves each unavailable indicator undecided with short history', async () =>
   expect(screen.getAllByText('Needs more history').length).toBeGreaterThan(0);
 });
 
+it('explains SMA warmup and omits the unplottable series from the legend', async () => {
+  mockRealSvg = true;
+  jest.mocked(fetchFinancialData).mockResolvedValue(reply(daily.slice(0, 90)));
+  render(<ChartsPage />);
+  const legend = await screen.findByRole('group', { name: 'Chart legend' });
+  expect(await within(legend).findByText('SMA 50')).toBeTruthy();
+  expect(within(legend).queryByText('SMA 200')).toBeNull();
+  expect(screen.getByText(/First value at observation 50\./)).toBeTruthy();
+  expect(screen.getByText(/90 of 200 observations available\./)).toBeTruthy();
+  expect(screen.getByRole<HTMLInputElement>('spinbutton', { name: /SMA 2$/ }).disabled).toBe(false);
+});
+
+it('shows a marker for the first SMA 200 value when exactly 200 observations exist', async () => {
+  mockRealSvg = true;
+  jest.mocked(fetchFinancialData).mockResolvedValue(reply(daily.slice(0, 200)));
+  const { container } = render(<ChartsPage />);
+  await waitFor(() => {
+    expect(container.querySelectorAll('.recharts-line-dot[stroke="var(--series-crypto)"]')).toHaveLength(1);
+  }, { timeout: 2500 });
+  const legend = screen.getByRole('group', { name: 'Chart legend' });
+  expect(within(legend).getByText('SMA 200')).toBeTruthy();
+});
+
+it('distinguishes an earlier window without SMA values from insufficient total history', async () => {
+  render(<ChartsPage />);
+  await waitFor(() => expect(observations()).toHaveLength(250));
+  fireEvent.click(screen.getByRole('button', { name: '6M' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Previous window' }));
+  expect(screen.getByText(/No calculated values in this window\./)).toBeTruthy();
+  expect(screen.queryByText(/observations available\./)).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Latest window' }));
+  expect(screen.queryByText(/No calculated values in this window\./)).toBeNull();
+});
+
 it('does not import an out-of-window close when only one close exists in a range', async () => {
   jest.mocked(fetchFinancialData).mockResolvedValue(reply([
     { date: '2026-01-01', close: 1 }, { date: '2026-02-01', close: 2 },
@@ -218,8 +449,12 @@ it('hides the previous asset payload immediately while another asset is loading'
 it('exposes previous/next/latest pan actions with bounded state and the actual quote currency', async () => {
   render(<ChartsPage />);
   await waitFor(() => expect(observations()).toHaveLength(250));
+  const surface = screen.getByRole('group', { name: 'Price · Bitcoin' });
+  expect(screen.queryByRole('group', { name: 'Chart navigation' })).toBeNull();
+  expect(surface.hasAttribute('aria-describedby')).toBe(false);
   fireEvent.click(screen.getByRole('button', { name: '1M' }));
   await waitFor(() => expect(observations()).toHaveLength(31));
+  expect(surface.getAttribute('aria-describedby')).toBe('chart-pan-help');
   expect(screen.getAllByText('USD').length).toBeGreaterThan(0);
   const previous = screen.getByRole('button', { name: 'Previous window' });
   const next = screen.getByRole('button', { name: 'Next window' });
@@ -236,6 +471,10 @@ it('calculates subunit trend percentages from the actual SMA denominator', async
   jest.mocked(fetchFinancialData).mockResolvedValue(reply(prices));
   render(<ChartsPage />);
   await waitFor(() => expect(observations()).toHaveLength(250));
+  expect(observations()[48].sma1).toBeNull();
+  expect(observations()[49].sma1).toBeCloseTo(0.00001, 10);
+  expect(observations()[198].sma2).toBeNull();
+  expect(observations()[199].sma2).toBeCloseTo(0.00001, 10);
   // SMA50 = 49 × .00001 + .00002, divided by 50 = .0000102.
   expect(screen.getByText('SMA(50) +96.08%')).toBeTruthy();
 });

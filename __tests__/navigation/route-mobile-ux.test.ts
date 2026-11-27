@@ -48,7 +48,8 @@ describe('route and mobile navigation trust states', () => {
     expect(shell).toContain("aria-label={t('Close menu')}");
     expect(dialog).toContain("event.key === 'Escape'");
     expect(dialog).toContain("event.key !== 'Tab'");
-    expect(dialog).toContain('previouslyFocusedRef.current?.focus?.()');
+    expect(dialog).toContain('if (previous?.isConnected && previous !== document.body) previous.focus()');
+    expect(dialog).toContain('returnFocusRef?.current?.focus()');
     expect(css).toMatch(/\.mobile-menu-close\s*\{[\s\S]*?width:\s*44px;[\s\S]*?height:\s*44px;/);
     expect(css).toContain('env(safe-area-inset-bottom)');
     expect(css).toContain('overscroll-behavior: contain');

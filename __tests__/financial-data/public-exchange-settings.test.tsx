@@ -15,19 +15,23 @@ jest.mock('@/lib/i18n/use-app-translation', () => ({
 }));
 
 describe('public sources require a deliberate per-login activation', () => {
+  let owner: string;
+  let nextOwner = 0;
+
   beforeEach(() => {
+    owner = `test-owner-${nextOwner++}`;
     window.localStorage.clear();
     window.sessionStorage.clear();
     clearPublicSourceConsent();
-    resolveBrowserWorkspace('owner-1');
+    resolveBrowserWorkspace(owner);
   });
   afterEach(cleanup);
 
   test('no public API can be used before activation, even when a source checkbox is preselected', () => {
-    render(React.createElement(PersonalMarketSources, { owner: 'owner-1' }));
+    render(React.createElement(PersonalMarketSources, { owner }));
     expect(screen.getByText('No public sources active in this login.')).toBeTruthy();
-    expect(isPublicSourceApproved('owner-1', 'binance')).toBe(false);
-    expect(isPublicSourceApproved('owner-1', 'coinpaprika')).toBe(false);
+    expect(isPublicSourceApproved(owner, 'binance')).toBe(false);
+    expect(isPublicSourceApproved(owner, 'coinpaprika')).toBe(false);
 
     const confirmation = screen.getByRole('checkbox', { name: /I will use the selected sources only/ });
     const activate = screen.getByRole('button', { name: 'Activate public sources for this login' });
@@ -35,27 +39,27 @@ describe('public sources require a deliberate per-login activation', () => {
     fireEvent.click(confirmation);
     fireEvent.click(activate);
 
-    expect(isPublicSourceApproved('owner-1', 'binance')).toBe(true);
-    expect(isPublicSourceApproved('owner-1', 'coinpaprika')).toBe(true);
-    expect(isPublicSourceApproved('owner-1', 'spot')).toBe(true);
-    expect(isPublicSourceApproved('owner-1', 'kraken')).toBe(false);
-    expect(readSourceSelection('owner-1').binance).toBe(true);
+    expect(isPublicSourceApproved(owner, 'binance')).toBe(true);
+    expect(isPublicSourceApproved(owner, 'coinpaprika')).toBe(true);
+    expect(isPublicSourceApproved(owner, 'spot')).toBe(true);
+    expect(isPublicSourceApproved(owner, 'kraken')).toBe(false);
+    expect(readSourceSelection(owner).binance).toBe(true);
     expect(readPublicSourceConsent('owner-2')).toEqual([]);
     expect(screen.getByText(/Active for this login/)).toBeTruthy();
     clearPublicSourceConsent();
-    expect(isPublicSourceApproved('owner-1', 'binance')).toBe(false);
+    expect(isPublicSourceApproved(owner, 'binance')).toBe(false);
   });
 
   test('private cloud offers personal provider priority even when hosted Tiingo is disabled', () => {
-    render(React.createElement(PersonalMarketSources, { owner: 'owner-1' }));
+    render(React.createElement(PersonalMarketSources, { owner }));
     const preference = screen.getByLabelText('Preferred personal connection') as HTMLSelectElement;
     expect(preference).toBeTruthy();
     fireEvent.change(preference, { target: { value: 'marketdata' } });
-    expect(readSourceSelection('owner-1').preferred).toBe('marketdata');
+    expect(readSourceSelection(owner).preferred).toBe('marketdata');
   });
 
   test('an active owner can revoke every public source without agreeing to activate anything', () => {
-    render(React.createElement(PersonalMarketSources, { owner: 'owner-1' }));
+    render(React.createElement(PersonalMarketSources, { owner }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I will use the selected sources only/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Activate public sources for this login' }));
     for (const name of [/Yahoo Finance/, /Gold API: indicative/, /CoinPaprika Free:/, /CoinGecko: optional/, /Binance: public/]) {
@@ -64,34 +68,34 @@ describe('public sources require a deliberate per-login activation', () => {
     const update = screen.getByRole('button', { name: 'Update active sources' });
     expect((update as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(update);
-    expect(readPublicSourceConsent('owner-1')).toEqual([]);
-    expect(readSourceSelection('owner-1')).toMatchObject({ yahoo: false, spot: false, coinpaprika: false, binance: false, kraken: false });
+    expect(readPublicSourceConsent(owner)).toEqual([]);
+    expect(readSourceSelection(owner)).toMatchObject({ yahoo: false, spot: false, coinpaprika: false, binance: false, kraken: false });
     expect(screen.getByText('No public sources active in this login.')).toBeTruthy();
   });
 
   test('Yahoo is the first visible, explicitly enabled public source for personal research', () => {
-    render(React.createElement(PersonalMarketSources, { owner: 'owner-1' }));
+    render(React.createElement(PersonalMarketSources, { owner }));
     const group = document.querySelector('section[aria-label="Public sources for this login"]');
     expect(group).not.toBeNull();
     const firstProvider = group!.querySelector('label.financial-provider-consent');
     expect(firstProvider?.textContent).toContain('Yahoo Finance');
-    expect(isPublicSourceApproved('owner-1', 'yahoo')).toBe(false);
+    expect(isPublicSourceApproved(owner, 'yahoo')).toBe(false);
     fireEvent.click(screen.getByRole('checkbox', { name: /I will use the selected sources only/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Activate public sources for this login' }));
-    expect(isPublicSourceApproved('owner-1', 'yahoo')).toBe(true);
-    expect(readSourceSelection('owner-1').yahoo).toBe(true);
+    expect(isPublicSourceApproved(owner, 'yahoo')).toBe(true);
+    expect(readSourceSelection(owner).yahoo).toBe(true);
   });
 
   test('a user can activate only Kraken and leave other sources off', () => {
-    render(React.createElement(PersonalMarketSources, { owner: 'owner-1' }));
+    render(React.createElement(PersonalMarketSources, { owner }));
     for (const name of [/Yahoo Finance/, /Gold API: indicative/, /CoinPaprika Free:/, /CoinGecko: optional/, /Binance: public/]) {
       fireEvent.click(screen.getByRole('checkbox', { name }));
     }
     fireEvent.click(screen.getByRole('checkbox', { name: /Kraken: public/ }));
     fireEvent.click(screen.getByRole('checkbox', { name: /I will use the selected sources only/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Activate public sources for this login' }));
-    expect(readPublicSourceConsent('owner-1')).toEqual(['kraken']);
-    expect(readSourceSelection('owner-1')).toMatchObject({
+    expect(readPublicSourceConsent(owner)).toEqual(['kraken']);
+    expect(readSourceSelection(owner)).toMatchObject({
       spot: false, coinpaprika: false, binance: false, kraken: true,
     });
     expect(readSourceSelection('owner-2').kraken).toBe(false);

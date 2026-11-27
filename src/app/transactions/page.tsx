@@ -17,6 +17,7 @@ import {
 } from '@/lib/config/supported-assets';
 import type { InvestmentTaxType, InvestmentTransactionType } from '@/lib/tax/investment-tax';
 import GlobalAddModal from '@/components/layout/global-add-modal';
+import { TradeEntryActions, useTradeEntry } from '@/components/layout/trade-entry-actions';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   Activity,
@@ -143,6 +144,11 @@ export default function TransactionsPage() {
   const [filterSource, setFilterSource] = useState('all');
   const [editingTransaction, setEditingTransaction] = useState<AppTransaction | null>(null);
   const [mounted, setMounted] = useState(false);
+  const tradeEntry = useTradeEntry();
+
+  useEffect(() => {
+    setEditingTransaction(null);
+  }, [tradeEntry.workspace]);
 
   useEffect(() => {
     setMounted(true);
@@ -297,6 +303,8 @@ export default function TransactionsPage() {
             </h1>
           </div>
           <div className="page-header-actions">
+            {tradeEntry.canEdit && <TradeEntryActions launchTrade={tradeEntry.launchTrade} />}
+            {tradeEntry.isDemo && <span className="status-pill neutral">{t('Demo snapshot is read-only.')}</span>}
             <button className="btn btn-secondary btn-sm mobile-app-secondary" onClick={handleExportCsv}>
               <Download size={14} /> {t('Export')}
             </button>
@@ -479,7 +487,7 @@ export default function TransactionsPage() {
                           </span>
                         </td>
                         <td className="ledger-action-cell">
-                          {transaction.source === 'manual' ? (
+                          {tradeEntry.canEdit && transaction.source === 'manual' ? (
                             <div style={{ display: 'flex', gap: 4 }}>
                               <button
                                 className="btn btn-secondary btn-sm"
@@ -561,7 +569,7 @@ export default function TransactionsPage() {
                           {t('Fee')}: {formatLedgerCurrency(feeValue, transaction.quote, language)}
                         </span>
                       )}
-                      {transaction.source === 'manual' && (
+                      {tradeEntry.canEdit && transaction.source === 'manual' && (
                         <button
                           className="btn btn-secondary btn-sm"
                           onClick={() => setEditingTransaction(transaction)}
@@ -580,7 +588,8 @@ export default function TransactionsPage() {
         </div>
       </div>
 
-      {editingTransaction && (
+      {tradeEntry.dialog}
+      {tradeEntry.canEdit && editingTransaction && (
         <GlobalAddModal
           onClose={() => setEditingTransaction(null)}
           editTransaction={editingTransaction}

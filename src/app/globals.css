@@ -4055,6 +4055,70 @@ textarea:focus-visible {
   animation: modalOverlayFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.account-create-overlay.trade-entry-overlay {
+  z-index: 130;
+}
+
+.trade-entry-panel {
+  overscroll-behavior: contain;
+}
+
+.trade-entry-panel .trade-entry-value {
+  min-block-size: 42px;
+  display: flex;
+  align-items: center;
+  overflow-wrap: anywhere;
+}
+
+.trade-entry-panel .trade-entry-submit,
+.btn.trade-action-primary {
+  min-block-size: 44px;
+  background: color-mix(in srgb, var(--accent-blue) 78%, var(--text-primary));
+  color: var(--bg-primary);
+}
+
+.trade-entry-panel .trade-entry-submit:hover:not(:disabled),
+.btn.trade-action-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-blue) 68%, var(--text-primary));
+}
+
+.trade-entry-panel .trade-entry-close,
+.trade-entry-panel .trade-entry-cancel {
+  min-block-size: 44px;
+  min-inline-size: 44px;
+}
+
+.trade-funding-actions,
+.trade-reference-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.trade-funding-actions .select {
+  flex: 1 1 12rem;
+  min-inline-size: 0;
+}
+
+.trade-reference-status,
+.trade-account-setup {
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.trade-account-setup {
+  display: inline-block;
+  margin-block-start: 6px;
+}
+
+@media (max-width: 768px) {
+  .trade-entry-overlay .trade-entry-panel {
+    max-height: calc(100dvh - 24px) !important;
+    padding: 20px 16px 16px !important;
+  }
+}
+
 @keyframes modalOverlayFade {
   from {
     opacity: 0;
@@ -6571,6 +6635,25 @@ textarea:focus-visible {
   min-width: 0;
   height: 500px;
   min-height: 320px;
+}
+
+.asset-chart-legend {
+  margin-block: 4px 10px;
+  color: var(--text-secondary);
+  font-size: .875rem;
+  line-height: 1.45;
+}
+
+.asset-chart-legend .recharts-default-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 8px;
+}
+
+.asset-chart-legend .recharts-legend-item {
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
 }
 
 /* Numeric SVG anchors must keep geometric left/right meaning in RTL layouts. */

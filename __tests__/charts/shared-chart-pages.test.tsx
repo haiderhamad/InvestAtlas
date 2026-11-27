@@ -36,7 +36,11 @@ jest.mock('@/lib/preferences/display-currency', () => ({ useDisplayCurrencyPrefe
   displayCurrency: 'eur', formatMoney: (value: number) => `€${value}`, eurToUsdRate: null,
 }) }));
 jest.mock('@/lib/financial-data/client', () => ({ fetchFinancialData: async () => ({ ok: true, json: async () => ({ prices: {} }) }) }));
-jest.mock('@/lib/storage/workspace-storage', () => ({ readWorkspaceStorageItem: () => null, writeWorkspaceStorageItem: () => undefined }));
+jest.mock('@/lib/storage/workspace-storage', () => ({
+  ...jest.requireActual('@/lib/storage/workspace-storage'),
+  readWorkspaceStorageItem: () => null,
+  writeWorkspaceStorageItem: () => undefined,
+}));
 jest.mock('@/lib/transactions/manual-store', () => ({
   MANUAL_TRANSACTIONS_EVENT: 'test-transactions',
   getAllTransactions: () => mockTotals.map((total, index) => ({

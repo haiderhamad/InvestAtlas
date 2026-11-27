@@ -16,6 +16,7 @@ const MAX_ROWS = 100;
 const KEY_PATTERN = /^[A-Za-z0-9_-]{8,512}$/;
 
 export const TIINGO_BROWSER_PROVIDER_CHANGE_EVENT = 'investatlas:tiingo-browser-provider-change';
+export const TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT = 'investatlas:tiingo-browser-credential-change';
 export type TiingoBrowserStatus =
   | 'connected' | 'invalid_key' | 'rate_limited' | 'quota_exhausted'
   | 'provider_unavailable' | 'unexpected_response' | 'capability_unavailable';
@@ -52,8 +53,8 @@ const controllers = new Set<AbortController>();
 const BUDGET_WINDOW_MS = 60 * 60_000;
 const budgets = new Map<string, number[]>();
 
-function emit(): void {
-  if (typeof window !== 'undefined') window.dispatchEvent(new Event(TIINGO_BROWSER_PROVIDER_CHANGE_EVENT));
+function emit(event: string = TIINGO_BROWSER_PROVIDER_CHANGE_EVENT): void {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(event));
 }
 function owner(value: string): string {
   const id = value.trim();
@@ -96,12 +97,14 @@ export function setTiingoBrowserCredential(userId: string, apiKey: string): void
   invalidate();
   session = next;
   emit();
+  emit(TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT);
 }
 export function clearTiingoBrowserCredential(): void {
   invalidate();
   pendingTestOwner = null;
   session = null;
   emit();
+  emit(TIINGO_BROWSER_CREDENTIAL_CHANGE_EVENT);
 }
 export function reconcileTiingoBrowserCredentialOwner(activeUserId: string | null): void {
   if ((session && session.userId !== activeUserId)
